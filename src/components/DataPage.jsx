@@ -1,22 +1,26 @@
-import React from 'react';
+// 데이터 페이지 컴포넌트 모음 — page4(경영 실적), page5(제품 성과), page6(고객 분석), page7(전략 계획)
 
 /* ──────────────────────────────────────────
    Page 4 – 경영 실적 요약
+   data.summary 의 KPI 카드 + 분기별 실적 테이블 렌더
 ────────────────────────────────────────── */
 export function DataPage4({ data }) {
   if (!data) return null;
+  // summary 객체에서 KPI 카드 목록 생성
   const s = data.summary;
   const summaryCards = [
-    { label: '총 매출', value: `₩${s.totalRevenue}`, color: '#3b82f6' },
-    { label: '총 비용', value: `₩${s.totalCost}`, color: '#ef4444' },
-    { label: '영업이익', value: `₩${s.operatingProfit}`, color: '#10b981' },
-    { label: '순이익', value: `₩${s.netProfit}`, color: '#8b5cf6' },
-    { label: '순이익률', value: s.profitMargin, color: '#f59e0b' },
-    { label: 'YoY 성장률', value: s.yoyGrowth, color: '#06b6d4' },
+    { label: '총 매출',    value: `₩${s.totalRevenue}`,      color: '#3b82f6' },
+    { label: '총 비용',    value: `₩${s.totalCost}`,         color: '#ef4444' },
+    { label: '영업이익',   value: `₩${s.operatingProfit}`,   color: '#10b981' },
+    { label: '순이익',     value: `₩${s.netProfit}`,         color: '#8b5cf6' },
+    { label: '순이익률',   value: s.profitMargin,             color: '#f59e0b' },
+    { label: 'YoY 성장률', value: s.yoyGrowth,               color: '#06b6d4' },
   ];
   return (
     <div style={pg.page}>
+      {/* 페이지 헤더 뱃지 + 제목 */}
       <PageHeader num={4} title={data.title} />
+      {/* 경영 KPI 요약 카드 그리드 (3열) */}
       <div style={pg.summaryGrid}>
         {summaryCards.map((c, i) => (
           <div key={i} style={{ ...pg.summaryCard, borderTop: `4px solid ${c.color}` }}>
@@ -25,6 +29,7 @@ export function DataPage4({ data }) {
           </div>
         ))}
       </div>
+      {/* 분기별 실적 테이블 — 매출·비용·이익·이익률 */}
       <h3 style={pg.sectionTitle}>분기별 실적</h3>
       <table style={pg.table}>
         <thead>
@@ -36,6 +41,7 @@ export function DataPage4({ data }) {
               <td style={pg.td}>{row.quarter}</td>
               <td style={pg.tdR}>₩{row.revenue}</td>
               <td style={pg.tdR}>₩{row.cost}</td>
+              {/* 이익은 초록, 이익률은 파랑으로 강조 */}
               <td style={{ ...pg.tdR, color: '#10b981', fontWeight: 600 }}>₩{row.profit}</td>
               <td style={{ ...pg.tdR, color: '#3b82f6' }}>{row.margin}</td>
             </tr>
@@ -48,6 +54,7 @@ export function DataPage4({ data }) {
 
 /* ──────────────────────────────────────────
    Page 5 – 제품별 성과
+   제품명·매출·수량·단가·성장률·매출비중 테이블 + 비중 게이지 바
 ────────────────────────────────────────── */
 export function DataPage5({ data }) {
   if (!data) return null;
@@ -65,8 +72,10 @@ export function DataPage5({ data }) {
               <td style={pg.tdR}>₩{p.revenue}</td>
               <td style={pg.tdR}>{p.units.toLocaleString()}</td>
               <td style={pg.tdR}>₩{p.avgPrice}</td>
+              {/* 성장률 초록 강조 */}
               <td style={{ ...pg.tdR, color: '#10b981' }}>{p.growth}</td>
               <td style={pg.tdR}>
+                {/* 매출 비중 게이지 바 */}
                 <div style={pg.barWrap}>
                   <div style={{ ...pg.barFill, width: p.share, background: '#3b82f6' }} />
                   <span style={pg.barLabel}>{p.share}</span>
@@ -82,19 +91,22 @@ export function DataPage5({ data }) {
 
 /* ──────────────────────────────────────────
    Page 6 – 고객 분석
+   고객 KPI 카드 행 + 세그먼트별 현황 테이블 (유지율 색상 조건부)
 ────────────────────────────────────────── */
 export function DataPage6({ data }) {
   if (!data) return null;
+  // 고객 KPI 목록 (전체·신규·이탈·NPS·CSAT)
   const kpis = [
     { label: '전체 고객수', value: data.totalCustomers.toLocaleString(), unit: '명' },
-    { label: '신규 고객', value: data.newCustomers.toLocaleString(), unit: '명' },
-    { label: '이탈 고객', value: data.churnedCustomers.toLocaleString(), unit: '명' },
-    { label: 'NPS', value: data.nps, unit: '점' },
-    { label: 'CSAT', value: data.csat, unit: '/5.0' },
+    { label: '신규 고객',   value: data.newCustomers.toLocaleString(),   unit: '명' },
+    { label: '이탈 고객',   value: data.churnedCustomers.toLocaleString(), unit: '명' },
+    { label: 'NPS',         value: data.nps,                              unit: '점' },
+    { label: 'CSAT',        value: data.csat,                             unit: '/5.0' },
   ];
   return (
     <div style={pg.page}>
       <PageHeader num={6} title={data.title} />
+      {/* 고객 KPI 카드 행 */}
       <div style={pg.kpiRow}>
         {kpis.map((k, i) => (
           <div key={i} style={pg.kpiCard}>
@@ -103,6 +115,7 @@ export function DataPage6({ data }) {
           </div>
         ))}
       </div>
+      {/* 세그먼트별 현황 테이블 */}
       <h3 style={pg.sectionTitle}>세그먼트별 현황</h3>
       <table style={pg.table}>
         <thead>
@@ -115,6 +128,7 @@ export function DataPage6({ data }) {
               <td style={pg.tdR}>{s.count.toLocaleString()}</td>
               <td style={pg.tdR}>₩{s.revenue}</td>
               <td style={pg.tdR}>₩{s.avgRevenue}</td>
+              {/* 유지율 90% 이상이면 초록, 미만이면 노랑 */}
               <td style={{ ...pg.tdR, color: parseFloat(s.retention) >= 90 ? '#10b981' : '#f59e0b' }}>{s.retention}</td>
             </tr>
           ))}
@@ -126,21 +140,26 @@ export function DataPage6({ data }) {
 
 /* ──────────────────────────────────────────
    Page 7 – 2025 전략 계획
+   목표 카드 + 핵심 이니셔티브 테이블 + 리스크 현황 테이블
 ────────────────────────────────────────── */
 export function DataPage7({ data }) {
   if (!data) return null;
+  // 목표 데이터 단축 참조
   const t = data.targets;
+  // 이니셔티브 상태별 뱃지 색상
   const STATUS_COLOR = { '진행중': '#10b981', '계획': '#3b82f6', '완료': '#6366f1' };
-  const PROB_COLOR = { '높음': '#ef4444', '중': '#f59e0b', '낮음': '#10b981' };
+  // 리스크 발생가능성·영향도 색상
+  const PROB_COLOR   = { '높음': '#ef4444', '중': '#f59e0b', '낮음': '#10b981' };
   return (
     <div style={pg.page}>
       <PageHeader num={7} title={data.title} />
+      {/* 2025 핵심 목표 카드 그리드 (4열) */}
       <div style={pg.targetGrid}>
         {[
-          { label: '매출 목표', value: `₩${t.revenueTarget}` },
-          { label: '성장률 목표', value: t.growthTarget },
-          { label: '신규 고객 목표', value: `${t.newCustomerTarget.toLocaleString()}명` },
-          { label: 'NPS 목표', value: `${t.npsTarget}점` },
+          { label: '매출 목표',       value: `₩${t.revenueTarget}` },
+          { label: '성장률 목표',     value: t.growthTarget },
+          { label: '신규 고객 목표',  value: `${t.newCustomerTarget.toLocaleString()}명` },
+          { label: 'NPS 목표',        value: `${t.npsTarget}점` },
         ].map((item, i) => (
           <div key={i} style={pg.targetCard}>
             <div style={pg.targetLabel}>{item.label}</div>
@@ -148,6 +167,7 @@ export function DataPage7({ data }) {
           </div>
         ))}
       </div>
+      {/* 핵심 이니셔티브 테이블 — 상태 뱃지 색상 조건부 */}
       <h3 style={pg.sectionTitle}>핵심 이니셔티브</h3>
       <table style={pg.table}>
         <thead>
@@ -167,6 +187,7 @@ export function DataPage7({ data }) {
           ))}
         </tbody>
       </table>
+      {/* 리스크 현황 테이블 — 발생가능성·영향도 색상 뱃지 */}
       <h3 style={pg.sectionTitle}>리스크 현황</h3>
       <table style={pg.table}>
         <thead>
@@ -188,8 +209,9 @@ export function DataPage7({ data }) {
 }
 
 /* ──────────────────────────────────────────
-   Shared sub-components
+   공용 서브 컴포넌트
 ────────────────────────────────────────── */
+// 페이지 헤더 — 페이지 번호 뱃지 + 섹션 제목
 function PageHeader({ num, title }) {
   return (
     <div style={pg.pageHeader}>
@@ -199,6 +221,7 @@ function PageHeader({ num, title }) {
   );
 }
 
+// 인라인 스타일 모음 (모든 DataPage 공유)
 const pg = {
   page: { width: '100%', padding: 24, boxSizing: 'border-box', background: '#fff' },
   pageHeader: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, paddingBottom: 12, borderBottom: '2px solid #3b82f6' },

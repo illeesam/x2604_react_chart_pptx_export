@@ -1,27 +1,37 @@
+// 미리보기 모달 — 자체 axios 데이터 조회, 8개 탭 페이지 렌더, 현재/전체 다운로드 처리
 import { useRef, useState, useEffect } from 'react';
 import axios from 'axios';
-import CoverPage from './CoverPage';
-import ChartPage from './ChartPage';
-import { DataPage4, DataPage5, DataPage6, DataPage7 } from './DataPage';
+import CoverPage from '../CoverPage';
+import ChartPage from '../ChartPage';
+import { DataPage4, DataPage5, DataPage6, DataPage7 } from '../DataPage';
 import {
   downloadPdf, downloadPpt, downloadImage, downloadReadme,
   downloadAllImages, downloadAllPdf, downloadAllPpt,
   downloadPptx, downloadAllPptx,
   downloadHtml, downloadAllHtml,
   makeFilename,
-} from '../utils/downloadHelpers';
+} from '../../utils/downloadHelpers';
 
-const TOTAL_PAGES = 8;   // 0=커버, 1~3=차트, 4~7=데이터
+// 표지(0) + 차트 3페이지(1~3) + 데이터 4페이지(4~7) = 총 8탭
+const TOTAL_PAGES = 8;
 
 export default function PreviewModal({ onClose }) {
+  // 모달 자체적으로 조회한 보고서 데이터
   const [data, setData] = useState(null);
+  // 데이터 로딩 중 여부
   const [loadingData, setLoadingData] = useState(true);
+  // 데이터 조회 오류 메시지
   const [loadError, setLoadError] = useState(null);
+  // 현재 보고 있는 탭(페이지) 번호 (0~7)
   const [currentPage, setCurrentPage] = useState(0);
-  const [downloading, setDownloading] = useState(null); // string key
+  // 현재 처리 중인 다운로드 키 (예: 'pdf', 'allPdf')
+  const [downloading, setDownloading] = useState(null);
+  // 전체 다운로드 진행 상태 { current, total }
   const [progress, setProgress] = useState({ current: 0, total: 7 });
+  // 현재 탭 DOM 참조 — html2canvas 캡처 대상
   const contentRef = useRef(null);
 
+  // 모달 마운트 시 /api/pptData.json 자체 조회
   useEffect(() => {
     setLoadingData(true);
     setLoadError(null);
@@ -31,6 +41,7 @@ export default function PreviewModal({ onClose }) {
       .finally(() => setLoadingData(false));
   }, []);
 
+  // 로딩 중 화면 — 스피너 표시
   if (loadingData) {
     return (
       <div style={s.overlay}>
@@ -44,6 +55,7 @@ export default function PreviewModal({ onClose }) {
     );
   }
 
+  // 오류 화면 — 에러 메시지 + 닫기 버튼
   if (loadError || !data) {
     return (
       <div style={s.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -57,33 +69,49 @@ export default function PreviewModal({ onClose }) {
     );
   }
 
+  // 탭 이동 — 0~7 범위 클램프
   const goTo = (p) => setCurrentPage(Math.max(0, Math.min(TOTAL_PAGES - 1, p)));
 
+  // 전체 다운로드 진행률 콜백
   const onProg = (cur, total) => setProgress({ current: cur, total });
 
+  // 다운로드 실행 래퍼 — 시작/완료 시 downloading 상태 관리
   const run = async (key, fn) => {
     setDownloading(key);
     setProgress({ current: 0, total: 7 });
     try { await fn(); } finally { setDownloading(null); }
   };
 
+  // 파일명 생성 시 사용할 출처 라벨
   const src = '미리보기';
 
-  // ── 현재 탭 ──
+  // ── 현재 탭 다운로드 핸들러 ──────────────────────────────────
+  // 전체 데이터를 마크다운(.md)으로 저장
   const handleReadme = () => run('readme', () => downloadReadme(data,      makeFilename(src, currentPage, 'README')));
+  // 현재 탭 DOM을 캡처해 PNG로 저장
   const handleImage  = () => run('image',  () => downloadImage(contentRef, makeFilename(src, currentPage, '이미지')));
+  // 현재 탭 캡처 → 가로 A4 PDF 저장
   const handlePdf    = () => run('pdf',    () => downloadPdf(contentRef,   makeFilename(src, currentPage, 'PDF')));
+  // 현재 탭 캡처 → 이미지 슬라이드 1장짜리 PPT 저장
   const handlePpt    = () => run('ppt',    () => downloadPpt(contentRef,   makeFilename(src, currentPage, 'PPT')));
+  // 현재 페이지 데이터로 네이티브 차트·표 PPTX 저장
   const handlePptx   = () => run('pptx',   () => downloadPptx(data, currentPage, makeFilename(src, currentPage, 'PPTX')));
+  // 현재 탭 캡처 이미지를 임베드한 HTML 저장
   const handleHtml   = () => run('html',   () => downloadHtml(contentRef, makeFilename(src, currentPage, 'HTML')));
 
-  // ── 전체 7페이지 ──
+  // ── 전체 7페이지 다운로드 핸들러 ─────────────────────────────
+  // 전 페이지 PNG 개별 저장 + 진행률 표시
   const handleAllImg  = () => run('allImg',  () => downloadAllImages(data, src, onProg));
+  // 전 페이지 캡처 합쳐 PDF 한 파일 저장
   const handleAllPdf  = () => run('allPdf',  () => downloadAllPdf(data,  makeFilename(src, '전체', '전체PDF'),  onProg));
+  // 전 페이지 캡처 이미지 슬라이드 PPT 저장
   const handleAllPpt  = () => run('allPpt',  () => downloadAllPpt(data,  makeFilename(src, '전체', '전체PPT'),  onProg));
+  // 전체 데이터로 네이티브 PPTX 저장 (캡처 없음)
   const handleAllPptx = () => run('allPptx', () => downloadAllPptx(data, makeFilename(src, '전체', '전체PPTX')));
+  // 전 페이지 캡처 합쳐 HTML 한 파일 저장
   const handleAllHtml = () => run('allHtml', () => downloadAllHtml(data, makeFilename(src, '전체', '전체HTML'), onProg));
 
+  // 탭 번호에 따라 렌더할 페이지 컴포넌트 반환
   const renderPage = () => {
     switch (currentPage) {
       case 0: return <CoverPage data={data} />;
@@ -98,25 +126,28 @@ export default function PreviewModal({ onClose }) {
     }
   };
 
+  // 다운로드 처리 중 여부
   const isBusy = !!downloading;
+  // 전체 페이지 다운로드 중 여부 (진행률 바 표시 조건)
   const isAll  = ['allImg','allPdf','allPpt','allPptx','allHtml'].includes(downloading);
 
   return (
     <div style={s.overlay} onClick={(e) => e.target === e.currentTarget && !isBusy && onClose()}>
       <div style={s.modal}>
 
-        {/* ── Header ── */}
+        {/* 헤더 — 보고서 제목·현재 페이지 정보·닫기 버튼 */}
         <div style={s.header}>
           <div>
             <div style={s.headerTitle}>{data.reportTitle}</div>
             <div style={s.headerSub}>미리보기 — {currentPage === 0 ? '표지' : `${currentPage}P`} / 총 {TOTAL_PAGES - 1}페이지</div>
           </div>
+          {/* 처리 중에는 닫기 비활성 */}
           <button style={s.closeBtn} onClick={onClose} disabled={isBusy}>✕</button>
         </div>
 
-        {/* ── 버튼 바 ── */}
+        {/* 버튼 바 — 현재 탭 / 전체 다운로드 버튼 그룹 */}
         <div style={s.btnBar}>
-          {/* 현재 탭 */}
+          {/* 현재 탭 단위 다운로드 */}
           <div style={s.btnGroup}>
             <span style={s.groupLabel}>현재 탭 ({currentPage}P)</span>
             <Btn label="README"  icon="📝" k="readme" downloading={downloading} onClick={handleReadme}  color="#6366f1" />
@@ -129,7 +160,7 @@ export default function PreviewModal({ onClose }) {
 
           <div style={s.divider} />
 
-          {/* 전체 7페이지 */}
+          {/* 전체 7페이지 일괄 다운로드 */}
           <div style={s.btnGroup}>
             <span style={s.groupLabel}>전체 7페이지</span>
             <Btn label="전체이미지" icon="🖼️" k="allImg"  downloading={downloading} onClick={handleAllImg}  color="#0284c7" />
@@ -140,7 +171,7 @@ export default function PreviewModal({ onClose }) {
           </div>
         </div>
 
-        {/* ── 전체 진행 오버레이 ── */}
+        {/* 전체 다운로드 진행 바 — isAll 일 때만 표시 */}
         {isAll && (
           <div style={s.progressBar}>
             <span style={s.progressText}>
@@ -153,7 +184,7 @@ export default function PreviewModal({ onClose }) {
           </div>
         )}
 
-        {/* ── 탭 ── */}
+        {/* 탭 버튼 목록 — 표지(0), 차트 1~3P, 데이터 4~7P */}
         <div style={s.tabs}>
           {Array.from({ length: TOTAL_PAGES }, (_, i) => i).map(p => (
             <button
@@ -166,12 +197,12 @@ export default function PreviewModal({ onClose }) {
           ))}
         </div>
 
-        {/* ── 콘텐츠 ── */}
+        {/* 페이지 콘텐츠 영역 — html2canvas 캡처 대상 */}
         <div style={s.body} ref={contentRef}>
           {renderPage()}
         </div>
 
-        {/* ── 푸터 ── */}
+        {/* 푸터 — 이전/다음 버튼, 페이지 도트 인디케이터 */}
         <div style={s.footer}>
           <button
             style={{ ...s.navBtn, opacity: currentPage === 0 ? 0.3 : 1 }}
@@ -180,6 +211,7 @@ export default function PreviewModal({ onClose }) {
           >
             ← 이전
           </button>
+          {/* 현재 페이지 위치를 나타내는 도트 */}
           <div style={s.pageIndicator}>
             {Array.from({ length: TOTAL_PAGES }, (_, i) => i).map(p => (
               <span
@@ -202,8 +234,11 @@ export default function PreviewModal({ onClose }) {
   );
 }
 
+// 다운로드 버튼 컴포넌트 — 처리 중 스피너 표시, 비활성 시 반투명
 function Btn({ label, icon, k, downloading, onClick, color }) {
+  // 이 버튼이 현재 처리 중인지 여부
   const loading = downloading === k;
+  // 다른 버튼이 처리 중이면 비활성
   const disabled = !!downloading;
   return (
     <button
@@ -217,6 +252,7 @@ function Btn({ label, icon, k, downloading, onClick, color }) {
   );
 }
 
+// 인라인 스타일 모음
 const s = {
   overlay: {
     position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
@@ -240,8 +276,6 @@ const s = {
     background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff',
     width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', fontSize: 13,
   },
-
-  /* 버튼 바 */
   btnBar: {
     display: 'flex', alignItems: 'center', gap: 0,
     padding: '8px 14px', background: '#f1f5f9',
@@ -259,8 +293,6 @@ const s = {
     display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap',
     transition: 'opacity 0.15s',
   },
-
-  /* 진행 바 */
   progressBar: {
     padding: '6px 16px', background: '#eff6ff', borderBottom: '1px solid #bfdbfe',
   },
@@ -271,8 +303,6 @@ const s = {
   progressFill: {
     height: '100%', background: '#3b82f6', borderRadius: 2, transition: 'width 0.3s',
   },
-
-  /* 탭 */
   tabs: {
     display: 'flex', gap: 4, padding: '8px 14px',
     borderBottom: '1px solid #e2e8f0', background: '#f8fafc', overflowX: 'auto',
@@ -283,10 +313,7 @@ const s = {
     whiteSpace: 'nowrap', color: '#64748b',
   },
   tabActive: { background: '#3b82f6', color: '#fff', borderColor: '#3b82f6' },
-
   body: { flex: 1, overflowY: 'auto', padding: 0, minHeight: 0 },
-
-  /* 푸터 */
   footer: {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
     padding: '10px 20px', borderTop: '1px solid #e2e8f0', background: '#f8fafc',
@@ -302,5 +329,20 @@ const s = {
     width: 12, height: 12, border: '2px solid rgba(255,255,255,0.3)',
     borderTop: '2px solid #fff', borderRadius: '50%',
     animation: 'spin 0.8s linear infinite', display: 'inline-block', flexShrink: 0,
+  },
+  // 로딩 상태 스타일
+  loadingWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 },
+  loadingSpinner: {
+    width: 36, height: 36, border: '4px solid #e2e8f0',
+    borderTop: '4px solid #3b82f6', borderRadius: '50%',
+    animation: 'spin 0.8s linear infinite',
+  },
+  loadingText: { color: '#64748b', fontSize: 14, margin: 0 },
+  // 오류 상태 스타일
+  errorWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 },
+  errorText: { color: '#b91c1c', fontSize: 14, margin: 0 },
+  retryBtn: {
+    padding: '7px 20px', borderRadius: 6, border: '1px solid #e2e8f0',
+    background: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#334155',
   },
 };

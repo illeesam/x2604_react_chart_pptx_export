@@ -1,8 +1,10 @@
+// 보고서 목록 화면 — 보고서 행 표시, axios 데이터 로드, 다운로드 처리
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import PreviewModal from './PreviewModal';
+import PreviewModal from './modal/PreviewModal';
 import { downloadReadme, downloadAllPpt, downloadAllPdf, downloadAllPptx, downloadAllHtml, makeFilename } from '../utils/downloadHelpers';
 
+// 형식별 내려받기 버튼 배경색 매핑
 const TYPE_COLORS = {
   readme: '#6366f1',
   image:  '#0ea5e9',
@@ -12,6 +14,7 @@ const TYPE_COLORS = {
   html:   '#0891b2',
 };
 
+// 데모용 보고서 목록 (실제 본문은 pptData.json 공유)
 const REPORT_LIST = [
   { id: 1, title: '2024 분기별 사업 성과 보고서', department: '경영기획팀', date: '2024-04-04', status: '최종' },
   { id: 2, title: '2024 마케팅 채널 분석 보고서', department: '마케팅팀', date: '2024-03-28', status: '검토중' },
@@ -20,14 +23,20 @@ const REPORT_LIST = [
 ];
 
 export default function ListPage() {
+  // 보고서 본문 데이터 (axios 로드 결과)
   const [reportData, setReportData] = useState(null);
+  // 초기 데이터 로딩 상태
   const [loading, setLoading] = useState(true);
+  // axios 오류 메시지
   const [error, setError] = useState(null);
+  // 미리보기 모달 표시 여부
   const [showPreview, setShowPreview] = useState(false);
+  // 현재 처리 중인 다운로드 reportId
   const [downloading, setDownloading] = useState(null);
-  const [selectedType, setSelectedType] = useState({}); // { [reportId]: 'pdf' | 'ppt' | ... }
+  // 행별 선택된 내려받기 형식 { [reportId]: 'pdf' | 'ppt' | ... }
+  const [selectedType, setSelectedType] = useState({});
 
-  // 화면 로드 시 데이터 로드
+  // 화면 마운트 시 /api/pptData.json 자동 조회
   useEffect(() => {
     axios.get('/api/pptData.json')
       .then(res => setReportData(res.data))
@@ -35,8 +44,10 @@ export default function ListPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  // 미리보기 모달 열기
   const handlePreview = () => setShowPreview(true);
 
+  // 도움말 팝업 새 창 열기
   const openHelpPopup = () => {
     const base = (process.env.PUBLIC_URL || '').replace(/\/$/, '');
     const url = `${base}/help/list-help.html`;
@@ -44,8 +55,10 @@ export default function ListPage() {
     window.open(url, 'ReportHubListHelp', features);
   };
 
+  // 파일명 생성 시 사용할 출처 라벨
   const src = '보고서목록';
 
+  // 선택된 형식으로 보고서 파일 다운로드
   const handleDownload = async (reportId) => {
     const type = selectedType[reportId] || 'pdf';
     if (!reportData) return;
@@ -53,6 +66,7 @@ export default function ListPage() {
     try {
       switch (type) {
         case 'readme': downloadReadme(reportData, makeFilename(src, reportId, 'README')); break;
+        // 이미지는 미리보기에서 페이지별 저장 안내
         case 'image':  alert('이미지 내려받기: 미리보기에서 원하는 페이지의 [이미지] 버튼을 사용하세요.'); break;
         case 'pdf':    await downloadAllPdf(reportData,  makeFilename(src, reportId, 'PDF'));  break;
         case 'ppt':    await downloadAllPpt(reportData,  makeFilename(src, reportId, 'PPT'));  break;
@@ -67,7 +81,7 @@ export default function ListPage() {
 
   return (
     <div style={s.container}>
-      {/* 페이지 헤더 */}
+      {/* 페이지 헤더 — 제목·도움말·로드 상태 배지 */}
       <div style={s.pageHeader}>
         <div>
           <div style={s.titleRow}>
@@ -78,6 +92,7 @@ export default function ListPage() {
           </div>
           <p style={s.pageSub}>데이터 기반 보고서를 미리보기하거나 다운로드하세요.</p>
         </div>
+        {/* 데이터 로드 상태 배지 */}
         {loading && <div style={s.loadingBadge}>데이터 로딩중...</div>}
         {error && <div style={s.errorBadge}>데이터 로드 실패: {error}</div>}
         {reportData && !loading && <div style={s.successBadge}>데이터 로드 완료</div>}
@@ -101,9 +116,11 @@ export default function ListPage() {
                 <td style={s.td}>{report.department}</td>
                 <td style={s.td}>{report.date}</td>
                 <td style={s.tdCenter}>
+                  {/* 상태 뱃지 (최종/검토중/초안) */}
                   <StatusBadge status={report.status} />
                 </td>
                 <td style={s.tdActions}>
+                  {/* 미리보기 버튼 — 데이터 로드 전 비활성 */}
                   <button
                     style={s.btnPreview}
                     onClick={handlePreview}
@@ -111,6 +128,7 @@ export default function ListPage() {
                   >
                     미리보기
                   </button>
+                  {/* 내려받기 형식 선택 드롭다운 */}
                   <select
                     style={s.select}
                     value={selectedType[report.id] || 'pdf'}
@@ -124,6 +142,7 @@ export default function ListPage() {
                     <option value="pptx">📋 PPTX</option>
                     <option value="html">🌐 HTML</option>
                   </select>
+                  {/* 내려받기 실행 버튼 — 처리 중 비활성 */}
                   <button
                     style={{
                       ...s.btnDownload,
@@ -142,13 +161,13 @@ export default function ListPage() {
         </table>
       </div>
 
-      {/* 안내 카드 */}
+      {/* 하단 데이터 로드 방식 안내 카드 */}
       <div style={s.infoCard}>
         <strong>데이터 로드 방식:</strong> 화면 로드 시 <code>/api/pptData.json</code> 을 axios 로 자동 로드합니다.
         미리보기는 로드된 데이터 기반으로 7페이지(차트 3 + 데이터 4)를 렌더링합니다.
       </div>
 
-      {/* 미리보기 모달 */}
+      {/* 미리보기 모달 — showPreview 상태가 true일 때만 마운트 */}
       {showPreview && (
         <PreviewModal onClose={() => setShowPreview(false)} />
       )}
@@ -156,6 +175,7 @@ export default function ListPage() {
   );
 }
 
+// 보고서 상태 뱃지 컴포넌트 (최종 / 검토중 / 초안)
 function StatusBadge({ status }) {
   const colors = { '최종': '#10b981', '검토중': '#f59e0b', '초안': '#94a3b8' };
   return (
@@ -165,6 +185,7 @@ function StatusBadge({ status }) {
   );
 }
 
+// 인라인 스타일 모음
 const s = {
   container: { maxWidth: 1100, margin: '0 auto', padding: '32px 24px', fontFamily: "'Segoe UI', 'Malgun Gothic', sans-serif" },
   pageHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 },

@@ -1,14 +1,17 @@
-import React from 'react';
+// 표지(page 0) — 핵심 KPI, 분기별 실적, 제품 TOP5, 2025 목표, 보고서 구성 요약
 
 export default function CoverPage({ data }) {
   if (!data) return null;
 
+  // 데이터 페이지 참조 (KPI·제품·고객·전략)
   const p4 = data.dataPages.page4;
   const p5 = data.dataPages.page5;
   const p6 = data.dataPages.page6;
   const p7 = data.dataPages.page7;
+  // 경영 실적 요약 객체
   const s  = p4.summary;
 
+  // 상단 핵심 KPI 카드 목록 (색상·배경 포함)
   const kpis = [
     { label: '총 매출',    value: `₩${s.totalRevenue}`,       color: '#3b82f6', bg: '#eff6ff' },
     { label: '영업이익',   value: `₩${s.operatingProfit}`,    color: '#10b981', bg: '#f0fdf4' },
@@ -20,6 +23,7 @@ export default function CoverPage({ data }) {
     { label: 'CSAT',       value: `${p6.csat} / 5.0`,         color: '#14b8a6', bg: '#f0fdfa' },
   ];
 
+  // 보고서 페이지 구성 목록 (표지 하단 안내용)
   const pageList = [
     { num: 'P1', label: '월별 매출 추이 / 분기별 비용 / 매출 비중 / 고객 세그먼트' },
     { num: 'P2', label: 'KPI 달성률 / 지역 분포 / 제품 포지셔닝 / 광고비 상관관계' },
@@ -32,14 +36,14 @@ export default function CoverPage({ data }) {
 
   return (
     <div style={s_.page}>
-      {/* 헤더 */}
+      {/* 헤더 — 보고서 제목·생성일 */}
       <div style={s_.header}>
         <div style={s_.badge}>EXECUTIVE SUMMARY</div>
         <h1 style={s_.title}>{data.reportTitle}</h1>
         <div style={s_.meta}>생성일: {data.generatedAt}</div>
       </div>
 
-      {/* KPI 그리드 */}
+      {/* KPI 그리드 — 8개 핵심 지표 카드 */}
       <div style={s_.section}>
         <div style={s_.sectionTitle}>핵심 경영 지표</div>
         <div style={s_.kpiGrid}>
@@ -52,9 +56,9 @@ export default function CoverPage({ data }) {
         </div>
       </div>
 
-      {/* 분기별 실적 + 제품별 */}
+      {/* 2열 레이아웃 — 분기별 실적 표 + 제품별 매출 비중 표 */}
       <div style={s_.twoCol}>
-        {/* 분기 */}
+        {/* 분기별 실적 테이블 */}
         <div style={s_.card}>
           <div style={s_.cardTitle}>분기별 실적</div>
           <table style={s_.table}>
@@ -78,7 +82,7 @@ export default function CoverPage({ data }) {
           </table>
         </div>
 
-        {/* 제품 TOP5 */}
+        {/* 제품 매출 비중 테이블 (막대 바 포함) */}
         <div style={s_.card}>
           <div style={s_.cardTitle}>제품별 매출 비중</div>
           <table style={s_.table}>
@@ -96,6 +100,7 @@ export default function CoverPage({ data }) {
                   <td style={s_.tdR}>₩{p.revenue}</td>
                   <td style={{ ...s_.tdR, color: '#10b981' }}>{p.growth}</td>
                   <td style={s_.tdR}>
+                    {/* 비중 게이지 바 */}
                     <div style={s_.bar}>
                       <div style={{ ...s_.barFill, width: p.share }} />
                       <span style={s_.barTxt}>{p.share}</span>
@@ -108,9 +113,9 @@ export default function CoverPage({ data }) {
         </div>
       </div>
 
-      {/* 2025 목표 + 보고서 구성 */}
+      {/* 2열 레이아웃 — 2025 핵심 목표 + 보고서 페이지 구성 */}
       <div style={s_.twoCol}>
-        {/* 2025 목표 */}
+        {/* 2025년 핵심 목표 카드 그리드 */}
         <div style={s_.card}>
           <div style={s_.cardTitle}>2025년 핵심 목표</div>
           <div style={s_.targetGrid}>
@@ -128,7 +133,7 @@ export default function CoverPage({ data }) {
           </div>
         </div>
 
-        {/* 보고서 구성 */}
+        {/* 보고서 페이지 구성 목록 */}
         <div style={s_.card}>
           <div style={s_.cardTitle}>보고서 구성 (총 7페이지)</div>
           <div>
@@ -145,6 +150,7 @@ export default function CoverPage({ data }) {
   );
 }
 
+// 인라인 스타일 모음
 const s_ = {
   page: { width: '100%', padding: '20px 24px', boxSizing: 'border-box', background: '#fff' },
 
