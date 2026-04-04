@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReportHub — 보고서 목록 도움말</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+      background: #f1f5f9;
+      color: #334155;
+      line-height: 1.55;
+      font-size: 14px;
+      min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(135deg, #1e293b, #334155);
+      color: #fff;
+      padding: 16px 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    header h1 { font-size: 17px; font-weight: 800; letter-spacing: -0.3px; }
+    header p { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+    .tabs {
+      display: flex;
+      gap: 0;
+      background: #e2e8f0;
+      padding: 0 12px;
+      border-bottom: 1px solid #cbd5e1;
+    }
+    .tab {
+      appearance: none;
+      border: none;
+      background: transparent;
+      padding: 12px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -1px;
+    }
+    .tab:hover { color: #1e293b; background: rgba(255,255,255,0.5); }
+    .tab.active {
+      color: #1e40af;
+      background: #fff;
+      border-bottom-color: #3b82f6;
+    }
+    main {
+      padding: 20px;
+      max-height: calc(100vh - 88px);
+      overflow-y: auto;
+    }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .panel h2 {
+      font-size: 15px;
+      color: #1e293b;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #3b82f6;
+    }
+    .panel ul { margin: 8px 0 12px 20px; }
+    .panel li { margin: 6px 0; }
+    .panel p { margin-bottom: 10px; }
+    .note {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: #0369a1;
+      margin-top: 14px;
+    }
+    code {
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 12px;
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #0f172a;
+    }
+    table.lib {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+    table.lib th, table.lib td {
+      border: 1px solid #e2e8f0;
+      padding: 8px 10px;
+      text-align: left;
+    }
+    table.lib th { background: #1e293b; color: #fff; font-weight: 600; }
+    table.lib tr:nth-child(even) { background: #f8fafc; }
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 8px;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    table.btnfeat {
+      min-width: 1020px;
+      font-size: 12px;
+      margin-top: 0;
+    }
+    table.btnfeat th, table.btnfeat td {
+      vertical-align: top;
+    }
+    table.btnfeat td[rowspan] {
+      vertical-align: middle;
+      font-weight: 600;
+      color: #1e293b;
+      background: #f1f5f9;
+      white-space: nowrap;
+    }
+    table.btnfeat col.c-screen { width: 9%; }
+    table.btnfeat col.c-feat { width: 11%; }
+    table.btnfeat col.c-desc { width: 30%; }
+    table.btnfeat col.c-lib { width: 26%; }
+    table.btnfeat col.c-note { width: 24%; }
+    table.btnfeat td.c-lib { color: #475569; }
+    table.btnfeat td.c-note { color: #64748b; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>도움말 — 보고서 목록</h1>
+    <p>ReportHub · 차트 PPT/PDF 내보내기 시스템</p>
+  </header>
+  <nav class="tabs" role="tablist">
+    <button type="button" class="tab active" role="tab" aria-selected="true" data-tab="screen">화면 설명</button>
+    <button type="button" class="tab" role="tab" aria-selected="false" data-tab="feature">기능 설명</button>
+    <button type="button" class="tab" role="tab" aria-selected="false" data-tab="buttons">버튼기능</button>
+    <button type="button" class="tab" role="tab" aria-selected="false" data-tab="lib">라이브러리</button>
+  </nav>
+  <main>
+    <section id="panel-screen" class="panel active" role="tabpanel">
+      <h2>보고서 목록 화면 구성</h2>
+      <p>이 화면은 샘플 <strong>보고서 목록</strong>을 표 형태로 보여 주고, 같은 데이터로 미리보기·다운로드를 수행합니다.</p>
+      <ul>
+        <li><strong>제목 영역</strong>: 「보고서 목록」과 안내 문구, 오른쪽에는 데이터 로드 상태(로딩 중 / 실패 / 완료) 배지가 표시됩니다.</li>
+        <li><strong>테이블</strong>
+          <ul>
+            <li><strong>번호</strong>: 행 식별용 순번입니다.</li>
+            <li><strong>보고서명</strong>: 데모용 제목입니다.</li>
+            <li><strong>담당부서 · 생성일 · 상태</strong>: 목록 메타 정보입니다. 상태는 색상 뱃지(최종·검토중·초안)로 구분됩니다.</li>
+            <li><strong>작업</strong>: <strong>미리보기</strong>(모달), <strong>형식 선택</strong>(드롭다운), <strong>내려받기</strong>(선택 형식으로 파일 저장)입니다.</li>
+          </ul>
+        </li>
+        <li><strong>하단 안내 박스</strong>: <code>/api/pptData.json</code>을 axios로 불러오는 방식과, 미리보기에서 렌더되는 페이지 구성에 대한 요약입니다.</li>
+      </ul>
+      <div class="note">앱 전체 상단 네비(ReportHub, 시스템 부제)는 모든 화면에 공통으로 표시됩니다.</div>
+    </section>
+    <section id="panel-feature" class="panel" role="tabpanel">
+      <h2>주요 기능</h2>
+      <ul>
+        <li><strong>데이터 로드</strong>: 페이지가 열리면 <code>GET /api/pptData.json</code>(정적 파일)을 axios로 읽어 보고서 본문 데이터를 채웁니다. 실패 시 상단에 오류가 표시됩니다.</li>
+        <li><strong>미리보기</strong>: 로드된 JSON을 기준으로 <strong>표지</strong>와 <strong>차트 3페이지 · 데이터 4페이지</strong>(총 8개 탭)을 넘겨 보며 확인할 수 있습니다. 목록의 「이미지」 내려받기는 여기서 페이지별 이미지 저장을 안내합니다.</li>
+        <li><strong>내려받기(목록)</strong>: 행마다 형식을 고른 뒤 「내려받기」로 전체 보고서를 한 번에 저장합니다. README(마크다운), PDF, PPT(캡처 기반 슬라이드), PPTX(네이티브 차트·표), HTML 등을 지원합니다.</li>
+        <li><strong>미리보기 내 추가 기능</strong>: 현재 페이지 단위·전체 일괄 저장(이미지, PDF, PPT, PPTX, HTML 등)을 더 세밀하게 선택할 수 있습니다.</li>
+      </ul>
+      <div class="note">목록의 보고서 행은 데모용이며, 본문 데이터는 동일한 <code>pptData.json</code>을 공유합니다.</div>
+    </section>
+    <section id="panel-buttons" class="panel" role="tabpanel">
+      <h2>버튼·조작별 안내</h2>
+      <p>보고서 <strong>목록</strong> 화면과 <strong>미리보기</strong> 모달에서 쓰는 주요 조작을 표로 정리했습니다.</p>
+      <div class="table-wrap">
+      <table class="lib btnfeat">
+        <colgroup>
+          <col class="c-screen" />
+          <col class="c-feat" />
+          <col class="c-desc" />
+          <col class="c-lib" />
+          <col class="c-note" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th scope="col">화면</th>
+            <th scope="col">기능</th>
+            <th scope="col">설명</th>
+            <th scope="col">사용된 라이브러리</th>
+            <th scope="col">비고</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td rowspan="8">보고서 목록</td>
+            <td>도움말</td>
+            <td>제목 「보고서 목록」 오른쪽 버튼을 누르면 이 도움말 페이지를 새 브라우저 창으로 연다.</td>
+            <td class="c-lib">React(클릭), <code>window.open</code>, 정적 HTML</td>
+            <td class="c-note">팝업 차단 시 브라우저에서 허용 필요. 경로는 <code>/help/list-help.html</code></td>
+          </tr>
+          <tr>
+            <td>미리보기</td>
+            <td>해당 행의 보고서를 로드된 JSON 기준으로 모달에서 넘겨 본다.</td>
+            <td class="c-lib">React</td>
+            <td class="c-note"><code>pptData.json</code> 로드 전·실패 시 비활성</td>
+          </tr>
+          <tr>
+            <td>README 내려받기</td>
+            <td>드롭다운에서 README를 선택한 뒤 「내려받기」를 누르면 <em>전체 보고서</em>(표지~데이터 요약)를 마크다운(<code>.md</code>) 파일로 저장한다.</td>
+            <td class="c-lib">브라우저 Blob, 다운로드 링크, 문자열 직렬화</td>
+            <td class="c-note">행마다 드롭다운 선택은 독립적. 데이터는 이미 메모리에 로드됨</td>
+          </tr>
+          <tr>
+            <td>이미지 내려받기</td>
+            <td>드롭다운에서 이미지를 선택한 뒤 「내려받기」를 누르면, 목록 화면에서는 파일 대신 미리보기에서 페이지별 이미지 저장을 안내하는 <code>alert</code>만 표시한다.</td>
+            <td class="c-lib">React(<code>alert</code>)</td>
+            <td class="c-note">실제 PNG 저장은 미리보기의 「이미지」 또는 「전체이미지」 사용</td>
+          </tr>
+          <tr>
+            <td>PDF 내려받기</td>
+            <td>드롭다운에서 PDF를 선택한 뒤 「내려받기」를 누르면 표지~데이터까지 페이지를 순서대로 렌더·캡처해 <strong>한 개의 PDF</strong>로 저장한다.</td>
+            <td class="c-lib"><strong>react-dom</strong> <code>createRoot</code>, <strong>html2canvas</strong>, <strong>jspdf</strong></td>
+            <td class="c-note">처리 중 진행률 표시. 가로 A4 기준</td>
+          </tr>
+          <tr>
+            <td>PPT 내려받기</td>
+            <td>드롭다운에서 PPT를 선택한 뒤 「내려받기」를 누르면 각 페이지를 캡처해 이미지 슬라이드로 이어 붙인 <code>.pptx</code> 한 파일로 저장한다.</td>
+            <td class="c-lib"><strong>react-dom</strong> <code>createRoot</code>, <strong>html2canvas</strong>, <strong>pptxgenjs</strong></td>
+            <td class="c-note">차트는 래스터 이미지로 들어감</td>
+          </tr>
+          <tr>
+            <td>PPTX 내려받기</td>
+            <td>드롭다운에서 PPTX를 선택한 뒤 「내려받기」를 누르면 전체 데이터로 네이티브 차트·표 중심의 여러 슬라이드 <code>.pptx</code>를 한 파일로 생성한다.</td>
+            <td class="c-lib"><strong>pptxgenjs</strong></td>
+            <td class="c-note">캡처 파이프라인 없이 데이터 직접 반영</td>
+          </tr>
+          <tr>
+            <td>HTML 내려받기</td>
+            <td>드롭다운에서 HTML을 선택한 뒤 「내려받기」를 누르면 표지~데이터 페이지를 순서대로 캡처해 이미지를 임베드한 <strong>한 개의 HTML</strong> 파일로 저장한다.</td>
+            <td class="c-lib"><strong>react-dom</strong> <code>createRoot</code>, <strong>html2canvas</strong>, Blob</td>
+            <td class="c-note">처리 중 진행률 표시</td>
+          </tr>
+          <tr>
+            <td rowspan="13">미리보기</td>
+            <td>닫기 ✕</td>
+            <td>미리보기 모달을 닫고 목록으로 돌아간다.</td>
+            <td class="c-lib">React</td>
+            <td class="c-note">전체 파일 생성 처리 중에는 비활성</td>
+          </tr>
+          <tr>
+            <td>README</td>
+            <td>현재 탭 화면이 아니라, 앱에 정의된 <strong>전체</strong> 보고서 데이터를 마크다운(<code>.md</code>)으로 저장한다.</td>
+            <td class="c-lib">브라우저 Blob, 다운로드 링크, 문자열 직렬화</td>
+            <td class="c-note">파일명에 페이지 번호 등이 붙을 수 있음</td>
+          </tr>
+          <tr>
+            <td>이미지</td>
+            <td>현재 보이는 본문 영역만 PNG로 캡처해 저장한다.</td>
+            <td class="c-lib"><strong>html2canvas</strong></td>
+            <td class="c-note">scale 2 등 옵션은 코드 기준</td>
+          </tr>
+          <tr>
+            <td>PDF</td>
+            <td>본문 영역을 캡처해 가로 A4 PDF 한 파일로 만든다. 세로가 길면 페이지를 나눈다.</td>
+            <td class="c-lib"><strong>html2canvas</strong>, <strong>jspdf</strong></td>
+            <td class="c-note">현재 탭 1페이지 분량</td>
+          </tr>
+          <tr>
+            <td>PPT</td>
+            <td>본문을 이미지 한 장으로 캡처해 슬라이드 1장짜리 <code>.pptx</code>로 저장한다.</td>
+            <td class="c-lib"><strong>html2canvas</strong>, <strong>pptxgenjs</strong></td>
+            <td class="c-note">차트는 래스터 이미지로 들어감</td>
+          </tr>
+          <tr>
+            <td>PPTX</td>
+            <td>현재 페이지에 맞는 데이터만으로 PowerPoint에서 편집 가능한 차트·표 위주 슬라이드를 만든다.</td>
+            <td class="c-lib"><strong>pptxgenjs</strong></td>
+            <td class="c-note">일부 차트 타입은 라이브러리 매핑·폴백 있음</td>
+          </tr>
+          <tr>
+            <td>HTML</td>
+            <td>캡처한 이미지를 data URL로 넣은 단일 HTML 파일로 저장한다.</td>
+            <td class="c-lib"><strong>html2canvas</strong>, Blob</td>
+            <td class="c-note">오프라인에서도 이미지가 보이도록 임베드</td>
+          </tr>
+          <tr>
+            <td>전체이미지</td>
+            <td>표지(0)~데이터(7)까지 순서대로 화면 밖에 렌더한 뒤 페이지마다 캡처하여 <strong>PNG 파일을 여러 개</strong> 저장한다.</td>
+            <td class="c-lib"><strong>react-dom</strong> <code>createRoot</code>, <strong>html2canvas</strong></td>
+            <td class="c-note">진행률 UI 표시. 페이지당 파일 1개</td>
+          </tr>
+          <tr>
+            <td>전체PDF</td>
+            <td>표지(0)~데이터(7)까지 순서대로 화면 밖에 렌더한 뒤 캡처·병합하여 <strong>한 개의 PDF</strong>로 저장한다.</td>
+            <td class="c-lib"><strong>react-dom</strong> <code>createRoot</code>, <strong>html2canvas</strong>, <strong>jspdf</strong></td>
+            <td class="c-note">진행률 UI 표시. 가로 A4 기준</td>
+          </tr>
+          <tr>
+            <td>전체PPT</td>
+            <td>표지(0)~데이터(7)까지 순서대로 화면 밖에 렌더한 뒤 각 페이지를 캡처해 슬라이드로 이어 붙인 <strong>한 개의 <code>.pptx</code></strong>로 저장한다.</td>
+            <td class="c-lib"><strong>react-dom</strong> <code>createRoot</code>, <strong>html2canvas</strong>, <strong>pptxgenjs</strong></td>
+            <td class="c-note">진행률 UI 표시. 이미지 슬라이드 방식</td>
+          </tr>
+          <tr>
+            <td>전체HTML</td>
+            <td>표지(0)~데이터(7)까지 순서대로 화면 밖에 렌더한 뒤 캡처한 이미지를 섹션별로 임베드한 <strong>한 개의 HTML</strong> 파일로 저장한다.</td>
+            <td class="c-lib"><strong>react-dom</strong> <code>createRoot</code>, <strong>html2canvas</strong>, Blob</td>
+            <td class="c-note">진행률 UI 표시</td>
+          </tr>
+          <tr>
+            <td>전체PPTX</td>
+            <td>전체 데이터로 네이티브 차트·표 중심의 여러 슬라이드 <code>.pptx</code>를 한 파일로 생성한다.</td>
+            <td class="c-lib"><strong>pptxgenjs</strong></td>
+            <td class="c-note">캡처 파이프라인 없이 데이터 직접 반영</td>
+          </tr>
+          <tr>
+            <td>페이지 탭 · 이전/다음 · 도트</td>
+            <td>표지·차트 3P·데이터 4P, 총 8개 화면을 전환한다.</td>
+            <td class="c-lib">React 상태. 차트 구간은 <strong>chart.js</strong> / <strong>react-chartjs-2</strong></td>
+            <td class="c-note">캡처 전 차트 렌더 대기 시간이 페이지별로 다름</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="note">목록에서 데이터를 가져올 때는 화면 로드 시 <strong>axios</strong>로 <code>/api/pptData.json</code>을 읽습니다. 위 표의 내려받기 관련 버튼은 그 결과 객체를 사용합니다.</div>
+    </section>
+    <section id="panel-lib" class="panel" role="tabpanel">
+      <h2>이 기능·앱에서 쓰는 라이브러리</h2>
+      <p>보고서 목록·미리보기·파일 생성에 관여하는 주요 패키지입니다. (버전은 프로젝트 <code>package.json</code> 기준)</p>
+      <table class="lib">
+        <thead>
+          <tr><th>라이브러리</th><th>역할</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>react</strong> / <strong>react-dom</strong></td><td>UI 컴포넌트, 화면 렌더링</td></tr>
+          <tr><td><strong>axios</strong></td><td><code>pptData.json</code> HTTP 로드</td></tr>
+          <tr><td><strong>chart.js</strong> / <strong>react-chartjs-2</strong></td><td>미리보기 차트 렌더링</td></tr>
+          <tr><td><strong>html2canvas</strong></td><td>DOM 캡처 → PNG / PDF / 이미지 슬라이드용</td></tr>
+          <tr><td><strong>jspdf</strong></td><td>PDF 생성</td></tr>
+          <tr><td><strong>pptxgenjs</strong></td><td>PPTX 생성(이미지 슬라이드·네이티브 차트·표)</td></tr>
+          <tr><td><strong>react-scripts</strong> / <strong>@craco/craco</strong></td><td>빌드·개발 서버(CRACO로 Webpack 보완)</td></tr>
+        </tbody>
+      </table>
+      <div class="note">자세한 의존성·버전·동작은 저장소의 <code>README_기능설명.md</code>를 참고하세요.</div>
+    </section>
+  </main>
+  <script>
+    (function () {
+      var tabs = document.querySelectorAll('.tab');
+      var panels = {
+        screen: document.getElementById('panel-screen'),
+        feature: document.getElementById('panel-feature'),
+        buttons: document.getElementById('panel-buttons'),
+        lib: document.getElementById('panel-lib')
+      };
+      tabs.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var key = btn.getAttribute('data-tab');
+          tabs.forEach(function (t) {
+            t.classList.toggle('active', t === btn);
+            t.setAttribute('aria-selected', t === btn ? 'true' : 'false');
+          });
+          Object.keys(panels).forEach(function (k) {
+            panels[k].classList.toggle('active', k === key);
+          });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
