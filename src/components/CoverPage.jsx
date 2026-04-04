@@ -1,5 +1,6 @@
 // 표지(page 0) — 핵심 KPI, 분기별 실적, 제품 TOP5, 2025 목표, 보고서 구성 요약
 
+// 표지 페이지(0번 탭) — KPI·분기 실적·제품 비중·목표·보고서 구성 안내
 export default function CoverPage({ data }) {
   if (!data) return null;
 
@@ -152,7 +153,7 @@ export default function CoverPage({ data }) {
 
 // 인라인 스타일 모음
 const s_ = {
-  page: { width: '100%', padding: '20px 24px', boxSizing: 'border-box', background: '#fff' },
+  page: { width: '100%', padding: '20px 24px', boxSizing: 'border-box', background: '#fff' }, // 표지 페이지 루트
 
   header: {
     background: 'linear-gradient(135deg,#1e293b,#334155)',
@@ -192,7 +193,7 @@ const s_ = {
   targetLabel: { fontSize: 10, color: '#1d4ed8', marginBottom: 3 },
   targetValue: { fontSize: 14, fontWeight: 700, color: '#1e3a8a' },
 
-  pageRow: { display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0', borderBottom: '1px solid #f1f5f9' },
-  pageNum: { background: '#3b82f6', color: '#fff', fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 3, whiteSpace: 'nowrap' },
-  pageLabel: { fontSize: 11, color: '#475569' },
+  pageRow: { display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0', borderBottom: '1px solid #f1f5f9' }, // 보고서 구성 한 줄(P번호+설명)
+  pageNum: { background: '#3b82f6', color: '#fff', fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 3, whiteSpace: 'nowrap' }, // P1~P7 뱃지
+  pageLabel: { fontSize: 11, color: '#475569' }, // 해당 페이지 설명 텍스트
 };

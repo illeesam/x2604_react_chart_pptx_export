@@ -391,7 +391,7 @@ const CHART_RENDERERS = {
   groupedHorizontal:GroupedHorizontalChart,
 };
 
-// 뱃지 호버 시 표시할 JSON 구조·데이터 정보 포맷터
+// 뱃지 호버 시 표시할 JSON 구조·데이터 요약 문자열 생성
 function formatTooltip(cd) {
   const MAX_LABELS = 5;
   const MAX_DATA   = 4;
@@ -466,6 +466,7 @@ function ChartCard({ chartData }) {
 }
 
 // 차트 페이지 — 페이지 헤더 + 2열 3행(6개) 차트 그리드
+// pageData: 해당 슬라이드 차트 JSON, pageNum: 미리보기 탭 번호(1~3)
 export default function ChartPage({ pageData, pageNum }) {
   if (!pageData) return null;
   // chart1~chart6 를 배열로 변환
@@ -493,12 +494,14 @@ export default function ChartPage({ pageData, pageNum }) {
 // 인라인 스타일 모음
 const styles = {
   page: {
+    // 차트 슬라이드 페이지 전체 래퍼
     width: '100%',
     padding: '20px 24px',
     boxSizing: 'border-box',
     background: '#fff',
   },
   pageHeader: {
+    // 상단 PAGE 뱃지 + 섹션 제목 행
     display: 'flex',
     alignItems: 'center',
     gap: 12,
@@ -507,6 +510,7 @@ const styles = {
     borderBottom: '2px solid #3b82f6',
   },
   pageNum: {
+    // "PAGE n" 번호 뱃지
     background: '#3b82f6',
     color: '#fff',
     fontSize: 12,
@@ -514,7 +518,7 @@ const styles = {
     padding: '3px 10px',
     borderRadius: 4,
   },
-  pageTitle: { margin: 0, fontSize: 16, fontWeight: 700, color: '#1e293b' },
+  pageTitle: { margin: 0, fontSize: 16, fontWeight: 700, color: '#1e293b' }, // 슬라이드 제목
   // 2열 × 3행 그리드 (페이지당 6개 차트)
   chartGrid: {
     display: 'grid',

@@ -1,6 +1,7 @@
 import React from 'react';
 import ListPage from './components/ListPage';
 
+// 앱 루트 — 네비게이션 + 보고서 목록(페이지) 영역
 function App() {
   return (
     <div style={{ minHeight: '100vh', background: '#f1f5f9' }}>
@@ -19,6 +20,7 @@ function App() {
   );
 }
 
+// 상단 고정 네비게이션 바 스타일
 const navStyle = {
   background: 'linear-gradient(135deg, #1e293b, #334155)',
   boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
@@ -27,6 +29,7 @@ const navStyle = {
   zIndex: 100,
 };
 
+// 네비 내부 레이아웃(로고·부제)
 const navInner = {
   maxWidth: 1100,
   margin: '0 auto',
@@ -36,7 +39,7 @@ const navInner = {
   alignItems: 'center',
 };
 
-const navLogo = { color: '#fff', fontSize: 20, fontWeight: 800, letterSpacing: '-0.5px' };
-const navRight = { color: '#94a3b8', fontSize: 13 };
+const navLogo = { color: '#fff', fontSize: 20, fontWeight: 800, letterSpacing: '-0.5px' }; // 로고 텍스트
+const navRight = { color: '#94a3b8', fontSize: 13 }; // 우측 부제
 
 export default App;

@@ -22,6 +22,7 @@ const REPORT_LIST = [
   { id: 4, title: '2025년 사업계획 발표자료', department: '경영기획팀', date: '2024-03-01', status: '초안' },
 ];
 
+// 보고서 목록 페이지 — 테이블·미리보기·일괄 다운로드 진입
 export default function ListPage() {
   // 보고서 본문 데이터 (axios 로드 결과)
   const [reportData, setReportData] = useState(null);
@@ -175,7 +176,7 @@ export default function ListPage() {
   );
 }
 
-// 보고서 상태 뱃지 컴포넌트 (최종 / 검토중 / 초안)
+// 목록 행의 보고서 상태(최종·검토중·초안) 색상 뱃지
 function StatusBadge({ status }) {
   const colors = { '최종': '#10b981', '검토중': '#f59e0b', '초안': '#94a3b8' };
   return (
@@ -187,10 +188,10 @@ function StatusBadge({ status }) {
 
 // 인라인 스타일 모음
 const s = {
-  container: { maxWidth: 1100, margin: '0 auto', padding: '32px 24px', fontFamily: "'Segoe UI', 'Malgun Gothic', sans-serif" },
-  pageHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 },
-  titleRow: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' },
-  pageTitle: { margin: 0, fontSize: 28, fontWeight: 800, color: '#1e293b' },
+  container: { maxWidth: 1100, margin: '0 auto', padding: '32px 24px', fontFamily: "'Segoe UI', 'Malgun Gothic', sans-serif" }, // 목록 페이지 전체
+  pageHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }, // 제목·상태 배지 영역
+  titleRow: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }, // 제목 + 도움말 버튼 줄
+  pageTitle: { margin: 0, fontSize: 28, fontWeight: 800, color: '#1e293b' }, // 페이지 메인 제목
   btnHelp: {
     padding: '6px 14px',
     borderRadius: 8,
@@ -202,7 +203,7 @@ const s = {
     cursor: 'pointer',
     boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
   },
-  pageSub: { margin: '4px 0 0', color: '#64748b', fontSize: 14 },
+  pageSub: { margin: '4px 0 0', color: '#64748b', fontSize: 14 }, // 페이지 부제/설명
   loadingBadge: { background: '#dbeafe', color: '#1d4ed8', padding: '6px 14px', borderRadius: 6, fontSize: 13, fontWeight: 600 },
   errorBadge: { background: '#fee2e2', color: '#b91c1c', padding: '6px 14px', borderRadius: 6, fontSize: 13, fontWeight: 600 },
   successBadge: { background: '#dcfce7', color: '#15803d', padding: '6px 14px', borderRadius: 6, fontSize: 13, fontWeight: 600 },

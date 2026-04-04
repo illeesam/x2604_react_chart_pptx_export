@@ -15,6 +15,7 @@ import {
 // 표지(0) + 차트 3페이지(1~3) + 데이터 4페이지(4~7) = 총 8탭
 const TOTAL_PAGES = 8;
 
+// 미리보기 모달 페이지 — 8탭 전환·캡처·다운로드
 export default function PreviewModal({ onClose }) {
   // 모달 자체적으로 조회한 보고서 데이터
   const [data, setData] = useState(null);
@@ -234,7 +235,7 @@ export default function PreviewModal({ onClose }) {
   );
 }
 
-// 다운로드 버튼 컴포넌트 — 처리 중 스피너 표시, 비활성 시 반투명
+// 다운로드 버튼 — k: 작업 키, downloading과 같을 때만 스피너
 function Btn({ label, icon, k, downloading, onClick, color }) {
   // 이 버튼이 현재 처리 중인지 여부
   const loading = downloading === k;
@@ -313,7 +314,7 @@ const s = {
     whiteSpace: 'nowrap', color: '#64748b',
   },
   tabActive: { background: '#3b82f6', color: '#fff', borderColor: '#3b82f6' },
-  body: { flex: 1, overflowY: 'auto', padding: 0, minHeight: 0 },
+  body: { flex: 1, overflowY: 'auto', padding: 0, minHeight: 0 }, // 현재 탭 페이지 본문(캡처 대상)
   footer: {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
     padding: '10px 20px', borderTop: '1px solid #e2e8f0', background: '#f8fafc',
@@ -323,8 +324,8 @@ const s = {
     padding: '7px 16px', borderRadius: 6, border: '1px solid #e2e8f0',
     background: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#334155',
   },
-  pageIndicator: { display: 'flex', gap: 6, alignItems: 'center' },
-  dot: { width: 8, height: 8, borderRadius: '50%', cursor: 'pointer', transition: 'background 0.2s' },
+  pageIndicator: { display: 'flex', gap: 6, alignItems: 'center' }, // 페이지 위치 도트 묶음
+  dot: { width: 8, height: 8, borderRadius: '50%', cursor: 'pointer', transition: 'background 0.2s' }, // 개별 페이지 도트
   spinner: {
     width: 12, height: 12, border: '2px solid rgba(255,255,255,0.3)',
     borderTop: '2px solid #fff', borderRadius: '50%',

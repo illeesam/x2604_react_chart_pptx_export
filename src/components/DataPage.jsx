@@ -4,6 +4,7 @@
    Page 4 – 경영 실적 요약
    data.summary 의 KPI 카드 + 분기별 실적 테이블 렌더
 ────────────────────────────────────────── */
+// 데이터 페이지 4 — 경영 실적 요약(KPI 카드 + 분기별 테이블)
 export function DataPage4({ data }) {
   if (!data) return null;
   // summary 객체에서 KPI 카드 목록 생성
@@ -56,6 +57,7 @@ export function DataPage4({ data }) {
    Page 5 – 제품별 성과
    제품명·매출·수량·단가·성장률·매출비중 테이블 + 비중 게이지 바
 ────────────────────────────────────────── */
+// 데이터 페이지 5 — 제품별 성과 테이블
 export function DataPage5({ data }) {
   if (!data) return null;
   return (
@@ -93,6 +95,7 @@ export function DataPage5({ data }) {
    Page 6 – 고객 분석
    고객 KPI 카드 행 + 세그먼트별 현황 테이블 (유지율 색상 조건부)
 ────────────────────────────────────────── */
+// 데이터 페이지 6 — 고객 분석(KPI + 세그먼트 테이블)
 export function DataPage6({ data }) {
   if (!data) return null;
   // 고객 KPI 목록 (전체·신규·이탈·NPS·CSAT)
@@ -142,6 +145,7 @@ export function DataPage6({ data }) {
    Page 7 – 2025 전략 계획
    목표 카드 + 핵심 이니셔티브 테이블 + 리스크 현황 테이블
 ────────────────────────────────────────── */
+// 데이터 페이지 7 — 전략·목표·이니셔티브·리스크
 export function DataPage7({ data }) {
   if (!data) return null;
   // 목표 데이터 단축 참조
@@ -211,7 +215,7 @@ export function DataPage7({ data }) {
 /* ──────────────────────────────────────────
    공용 서브 컴포넌트
 ────────────────────────────────────────── */
-// 페이지 헤더 — 페이지 번호 뱃지 + 섹션 제목
+// 페이지 헤더 — num: 슬라이드 번호(4~7), title: 섹션 제목
 function PageHeader({ num, title }) {
   return (
     <div style={pg.pageHeader}>
@@ -223,10 +227,10 @@ function PageHeader({ num, title }) {
 
 // 인라인 스타일 모음 (모든 DataPage 공유)
 const pg = {
-  page: { width: '100%', padding: 24, boxSizing: 'border-box', background: '#fff' },
-  pageHeader: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, paddingBottom: 12, borderBottom: '2px solid #3b82f6' },
-  pageNum: { background: '#3b82f6', color: '#fff', fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 4 },
-  pageTitle: { margin: 0, fontSize: 18, fontWeight: 700, color: '#1e293b' },
+  page: { width: '100%', padding: 24, boxSizing: 'border-box', background: '#fff' }, // 데이터 슬라이드 페이지 루트
+  pageHeader: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, paddingBottom: 12, borderBottom: '2px solid #3b82f6' }, // 상단 헤더 행
+  pageNum: { background: '#3b82f6', color: '#fff', fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 4 }, // PAGE n 뱃지
+  pageTitle: { margin: 0, fontSize: 18, fontWeight: 700, color: '#1e293b' }, // 슬라이드 제목
   sectionTitle: { fontSize: 15, fontWeight: 700, color: '#334155', margin: '20px 0 10px' },
 
   summaryGrid: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 20 },

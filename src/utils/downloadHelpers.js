@@ -209,8 +209,9 @@ export async function downloadPpt(contentRef, filename = 'PPT') {
 ────────────────────────────────────────── */
 export async function downloadAllImages(data, source = '미리보기', onProgress) {
   const { captureAllPages } = await import('./capturePages');
-  const pages = await captureAllPages(data, onProgress);
+  const pages = await captureAllPages(data, onProgress); // pages: 각 항목에 canvas, pageNum(0~7)
   for (const { canvas, pageNum } of pages) {
+    // pageNum: 파일명 접미에 붙는 페이지 인덱스
     await new Promise(r => setTimeout(r, 150));
     const a = document.createElement('a');
     a.href = canvas.toDataURL('image/png');
@@ -231,6 +232,7 @@ export async function downloadAllPdf(data, filename = '전체PDF', onProgress) {
   const pdfH = pdf.internal.pageSize.getHeight();
 
   pages.forEach(({ canvas }, idx) => {
+    // idx: PDF 안에서의 페이지 순번(0부터)
     if (idx > 0) pdf.addPage();
     const ratio = canvas.height / canvas.width;
     const imgH = Math.min(pdfW * ratio, pdfH);
@@ -252,6 +254,7 @@ export async function downloadAllPpt(data, filename = '전체PPT', onProgress) {
   pptx.layout = 'LAYOUT_WIDE';
 
   for (const { canvas } of pages) {
+    // pages 순서대로 슬라이드 1장씩 추가
     const slide = pptx.addSlide();
     slide.addImage({ data: canvas.toDataURL('image/png'), x: 0, y: 0, w: '100%', h: '100%' });
   }
@@ -307,8 +310,10 @@ export async function downloadAllHtml(data, filename = '전체HTML', onProgress)
   const { captureAllPages } = await import('./capturePages');
   const pages = await captureAllPages(data, onProgress);
 
+  // 각 캡처를 HTML 섹션(표지 / n페이지)으로 묶은 문자열 조각들
   const pageItems = pages.map(({ canvas, pageNum }) => {
     const dataUrl = canvas.toDataURL('image/png');
+    // pageNum: 0이면 표지, 그 외는 본문 페이지 번호 표기
     const label = pageNum === 0 ? '표지' : `${pageNum}페이지`;
     return `
     <div class="page">
@@ -428,6 +433,7 @@ function addChartToSlide(pptx, slide, chartData, x, y, w, h) {
   }
 }
 
+// data 기준으로 표지·차트1~3·데이터4~7 슬라이드를 pptx에 추가
 function buildPptxSlides(pptx, data) {
   const HBG = '1E293B';
   const HFG = 'FFFFFF';
@@ -762,11 +768,12 @@ function buildPptxSlides(pptx, data) {
 /* ──────────────────────────────────────────
    현재 페이지 PPTX (네이티브 차트/표, 단일 슬라이드)
 ────────────────────────────────────────── */
+// pageNum(0~7)에 해당하는 슬라이드만 담은 PPTX 1파일 저장
 export async function downloadPptx(data, pageNum, filename = 'PPTX') {
   const pptx = new pptxgen();
   pptx.layout = 'LAYOUT_WIDE';
 
-  // 임시로 data를 단일 페이지 슬라이스해서 buildPptxSlides 호출
+  // 전체 data에서 해당 페이지 데이터만 남긴 뒤 슬라이드 생성
   const singleData = slicePageData(data, pageNum);
   buildPptxSlides(pptx, singleData);
 
@@ -783,14 +790,13 @@ export async function downloadAllPptx(data, filename = '전체PPTX') {
   await pptx.writeFile({ fileName: `${filename}.pptx` });
 }
 
-/* 단일 페이지용 data 슬라이스 헬퍼
-   pageNum: 0=커버, 1~3=차트, 4~7=데이터 */
+/* 단일 슬라이드용 data 슬라이스 — pageNum: 0=표지(전체), 1~3=차트만, 4~7=데이터만 */
 function slicePageData(data, pageNum) {
-  if (pageNum === 0) return data; // 커버는 전체 data 필요
+  if (pageNum === 0) return data; // 표지 슬라이드는 p4~p7 등 전역 참조가 있어 원본 유지
   if (pageNum <= 3) {
-    const key = `page${pageNum}`;
+    const key = `page${pageNum}`; // charts.page1 | page2 | page3
     return { charts: { [key]: data.charts[key] }, dataPages: {} };
   }
-  const key = `page${pageNum}`;
+  const key = `page${pageNum}`; // dataPages.page4 … page7
   return { charts: {}, dataPages: { [key]: data.dataPages[key] } };
 }
