@@ -149,8 +149,8 @@ export default function ListPage() {
       </div>
 
       {/* 미리보기 모달 */}
-      {showPreview && reportData && (
-        <PreviewModal data={reportData} onClose={() => setShowPreview(false)} />
+      {showPreview && (
+        <PreviewModal onClose={() => setShowPreview(false)} />
       )}
     </div>
   );

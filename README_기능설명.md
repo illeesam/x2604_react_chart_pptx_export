@@ -56,6 +56,102 @@
 
 ---
 
+### 2.7 컴포넌트 연결 관계도
+
+#### 트리 구조 (함수 호출 · 파라미터 포함)
+
+```
+App.js
+└── ListPage.jsx
+    │  axios.get('/api/pptData.json')                                        (보고서 전체 데이터 로드)
+    │
+    ├── <PreviewModal onClose={fn} />                                        (미리보기 모달 마운트)
+    │   │  axios.get('/api/pptData.json')                                    (모달 자체 데이터 조회)
+    │   │
+    │   ├── <CoverPage data={data} />                                        (page 0 : 표지 렌더)
+    │   ├── <ChartPage pageData={data.charts.pageN} pageNum={N} />           (page 1~3 : 차트 렌더)
+    │   ├── <DataPage4 data={data.dataPages.page4} />                        (page 4 : 경영 실적)
+    │   ├── <DataPage5 data={data.dataPages.page5} />                        (page 5 : 제품별 성과)
+    │   ├── <DataPage6 data={data.dataPages.page6} />                        (page 6 : 고객 분석)
+    │   └── <DataPage7 data={data.dataPages.page7} />                        (page 7 : 전략·목표)
+    │
+    │   ── 현재 탭 다운로드 (PreviewModal) ──────────────────────────────────
+    │   ├── downloadReadme(data, makeFilename(src, currentPage, 'README'))   (전체 데이터 → .md 저장)
+    │   ├── downloadImage(contentRef, makeFilename(src, currentPage, '이미지')) (현재 탭 캡처 → PNG 저장)
+    │   ├── downloadPdf(contentRef, makeFilename(src, currentPage, 'PDF'))   (현재 탭 캡처 → PDF 저장)
+    │   ├── downloadPpt(contentRef, makeFilename(src, currentPage, 'PPT'))   (현재 탭 캡처 → PPT 슬라이드)
+    │   ├── downloadPptx(data, currentPage, makeFilename(src, currentPage, 'PPTX')) (현재 페이지 네이티브 PPTX)
+    │   └── downloadHtml(contentRef, makeFilename(src, currentPage, 'HTML')) (현재 탭 캡처 → HTML 저장)
+    │
+    │   ── 전체 다운로드 (PreviewModal) ─────────────────────────────────────
+    │   ├── downloadAllImages(data, src, onProg)                             (전 페이지 PNG 개별 저장)
+    │   ├── downloadAllPdf(data, makeFilename(src, '전체', '전체PDF'), onProg) (전 페이지 합쳐 PDF 저장)
+    │   ├── downloadAllPpt(data, makeFilename(src, '전체', '전체PPT'), onProg) (전 페이지 이미지 슬라이드 PPT)
+    │   ├── downloadAllPptx(data, makeFilename(src, '전체', '전체PPTX'))      (전체 네이티브 PPTX 저장)
+    │   └── downloadAllHtml(data, makeFilename(src, '전체', '전체HTML'), onProg) (전 페이지 합쳐 HTML 저장)
+    │
+    └── ── 목록 다운로드 (ListPage) ─────────────────────────────────────────
+        ├── downloadReadme(reportData, makeFilename(src, reportId, 'README')) (전체 데이터 → .md 저장)
+        ├── downloadAllPdf(reportData, makeFilename(src, reportId, 'PDF'))    (전 페이지 합쳐 PDF 저장)
+        ├── downloadAllPpt(reportData, makeFilename(src, reportId, 'PPT'))    (전 페이지 이미지 슬라이드 PPT)
+        ├── downloadAllPptx(reportData, makeFilename(src, reportId, 'PPTX')) (전체 네이티브 PPTX 저장)
+        └── downloadAllHtml(reportData, makeFilename(src, reportId, 'HTML')) (전 페이지 합쳐 HTML 저장)
+
+downloadHelpers.js
+└── capturePages.js
+    └── captureAllPages(data, onProgress)                                    (8 페이지 오프스크린 순차 캡처)
+        └── getPageElement(data, pageNum)                                    (페이지 번호 → JSX 반환)
+            ├── <CoverPage data={data} />                                    (page 0)
+            ├── <ChartPage pageData={data.charts.pageN} pageNum={N} />       (page 1~3)
+            └── <DataPage4~7 data={data.dataPages.pageN} />                  (page 4~7)
+```
+
+#### 컴포넌트 · 모듈 역할 표
+
+| 컴포넌트 / 모듈 | 유형 | 직접 사용처 | 사용하는 것 (자식·의존) | 주요 역할 |
+|---|---|---|---|---|
+| `App.js` | 컴포넌트 | — (루트) | `<ListPage />` | 앱 진입점, 공통 네비게이션 렌더 |
+| `ListPage.jsx` | 컴포넌트 | `App.js` | `<PreviewModal onClose>`, `downloadHelpers` | 보고서 목록 테이블, axios 로드, 목록 다운로드 |
+| `PreviewModal.jsx` | 컴포넌트 | `ListPage` | `<CoverPage data>`, `<ChartPage pageData pageNum>`, `<DataPageN data>`, `downloadHelpers` | 미리보기 모달, **자체 axios 로드**, 탭·내비, 다운로드 |
+| `CoverPage.jsx` | 컴포넌트 | `PreviewModal`, `capturePages` | — | `data` prop 받아 표지 슬라이드 렌더 |
+| `ChartPage.jsx` | 컴포넌트 | `PreviewModal`, `capturePages` | `chart.js`, `react-chartjs-2` | `pageData`, `pageNum` prop 받아 차트 2×2 렌더 (page1~3) |
+| `DataPage.jsx` | 컴포넌트 | `PreviewModal`, `capturePages` | — | `data` prop 받아 KPI·표·전략 렌더 (page4~7) |
+| `downloadHelpers.js` | 유틸 | `ListPage`, `PreviewModal` | `captureAllPages()`, `html2canvas`, `jspdf`, `pptxgenjs` | 모든 다운로드 함수 제공 (`makeFilename`포함) |
+| `capturePages.js` | 유틸 | `downloadHelpers` | `createRoot()`, `getPageElement()`, `html2canvas` | `captureAllPages(data, onProgress)` — 오프스크린 순차 캡처 |
+
+#### 함수 호출 관계 상세 표
+
+| 호출 위치 | 함수(파라미터) | 의미 |
+|---|---|---|
+| `ListPage` | `axios.get('/api/pptData.json')` | 화면 로드 시 보고서 데이터 자동 조회 |
+| `ListPage` | `<PreviewModal onClose={fn} />` | 미리보기 버튼 클릭 시 모달 마운트 |
+| `ListPage` | `downloadReadme(reportData, makeFilename(src, id, 'README'))` | README .md 저장 |
+| `ListPage` | `downloadAllPdf(reportData, makeFilename(src, id, 'PDF'))` | 전 페이지 합쳐 PDF 저장 |
+| `ListPage` | `downloadAllPpt(reportData, makeFilename(src, id, 'PPT'))` | 전 페이지 이미지 슬라이드 PPT 저장 |
+| `ListPage` | `downloadAllPptx(reportData, makeFilename(src, id, 'PPTX'))` | 전체 네이티브 PPTX 저장 |
+| `ListPage` | `downloadAllHtml(reportData, makeFilename(src, id, 'HTML'))` | 전 페이지 합쳐 HTML 저장 |
+| `PreviewModal` | `axios.get('/api/pptData.json')` | 모달 마운트 시 자체 데이터 조회 |
+| `PreviewModal` | `<CoverPage data={data} />` | 표지(page 0) 렌더 |
+| `PreviewModal` | `<ChartPage pageData={data.charts.pageN} pageNum={N} />` | 차트(page 1~3) 렌더 |
+| `PreviewModal` | `<DataPage4~7 data={data.dataPages.pageN} />` | 데이터(page 4~7) 렌더 |
+| `PreviewModal` | `downloadReadme(data, makeFilename(src, currentPage, 'README'))` | 전체 데이터 README 저장 |
+| `PreviewModal` | `downloadImage(contentRef, makeFilename(src, currentPage, '이미지'))` | 현재 탭 DOM 캡처 → PNG 저장 |
+| `PreviewModal` | `downloadPdf(contentRef, makeFilename(src, currentPage, 'PDF'))` | 현재 탭 캡처 → PDF 저장 |
+| `PreviewModal` | `downloadPpt(contentRef, makeFilename(src, currentPage, 'PPT'))` | 현재 탭 캡처 → 이미지 슬라이드 PPT |
+| `PreviewModal` | `downloadPptx(data, currentPage, makeFilename(src, currentPage, 'PPTX'))` | 현재 페이지 네이티브 PPTX 저장 |
+| `PreviewModal` | `downloadHtml(contentRef, makeFilename(src, currentPage, 'HTML'))` | 현재 탭 캡처 → HTML 저장 |
+| `PreviewModal` | `downloadAllImages(data, src, onProg)` | 전 페이지 PNG 개별 저장 + 진행률 |
+| `PreviewModal` | `downloadAllPdf(data, makeFilename(src, '전체', '전체PDF'), onProg)` | 전 페이지 합쳐 PDF 저장 + 진행률 |
+| `PreviewModal` | `downloadAllPpt(data, makeFilename(src, '전체', '전체PPT'), onProg)` | 전 페이지 이미지 슬라이드 PPT + 진행률 |
+| `PreviewModal` | `downloadAllPptx(data, makeFilename(src, '전체', '전체PPTX'))` | 전체 네이티브 PPTX 저장 |
+| `PreviewModal` | `downloadAllHtml(data, makeFilename(src, '전체', '전체HTML'), onProg)` | 전 페이지 합쳐 HTML 저장 + 진행률 |
+| `downloadHelpers` | `captureAllPages(data, onProgress)` | 8 페이지 오프스크린 순차 캡처, canvas 배열 반환 |
+| `capturePages` | `getPageElement(data, pageNum)` | 페이지 번호 → 렌더할 JSX 컴포넌트 반환 |
+| `capturePages` | `createRoot(container).render(element)` | 오프스크린 DOM에 컴포넌트 마운트 |
+| `capturePages` | `html2canvas(container, { scale:1.8, … })` | 마운트된 DOM → Canvas 캡처 |
+
+---
+
 ## 3. 보내기 종류별 동작
 
 | 형식 | 구현 요약 | 비고 |

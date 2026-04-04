@@ -1,4 +1,5 @@
-import React, { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
+import axios from 'axios';
 import CoverPage from './CoverPage';
 import ChartPage from './ChartPage';
 import { DataPage4, DataPage5, DataPage6, DataPage7 } from './DataPage';
@@ -12,13 +13,49 @@ import {
 
 const TOTAL_PAGES = 8;   // 0=커버, 1~3=차트, 4~7=데이터
 
-export default function PreviewModal({ data, onClose }) {
+export default function PreviewModal({ onClose }) {
+  const [data, setData] = useState(null);
+  const [loadingData, setLoadingData] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [downloading, setDownloading] = useState(null); // string key
   const [progress, setProgress] = useState({ current: 0, total: 7 });
   const contentRef = useRef(null);
 
-  if (!data) return null;
+  useEffect(() => {
+    setLoadingData(true);
+    setLoadError(null);
+    axios.get('/api/pptData.json')
+      .then(res => setData(res.data))
+      .catch(err => setLoadError(err.message))
+      .finally(() => setLoadingData(false));
+  }, []);
+
+  if (loadingData) {
+    return (
+      <div style={s.overlay}>
+        <div style={{ ...s.modal, alignItems: 'center', justifyContent: 'center' }}>
+          <div style={s.loadingWrap}>
+            <div style={s.loadingSpinner} />
+            <p style={s.loadingText}>데이터 로딩중...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError || !data) {
+    return (
+      <div style={s.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
+        <div style={{ ...s.modal, alignItems: 'center', justifyContent: 'center' }}>
+          <div style={s.errorWrap}>
+            <p style={s.errorText}>데이터 로드 실패: {loadError}</p>
+            <button style={s.retryBtn} onClick={onClose}>닫기</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const goTo = (p) => setCurrentPage(Math.max(0, Math.min(TOTAL_PAGES - 1, p)));
 
