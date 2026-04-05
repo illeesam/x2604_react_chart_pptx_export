@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import axiosLib from '../utils/axiosLib';
 import { API_JSON } from '../utils/apiConfig';
 import { normalizePreviewModalData } from '../utils/normalizePreviewModalData';
-import Base01WidgetPanel from '../components/widgetPanel/base01WidgetPanel';
+import Base01WidgetPanel from '../components/widgetPanel/Base01WidgetPanel';
 
 export default function WidgetList() {
   const [raw, setRaw]         = useState(null); // widgetListData 원본

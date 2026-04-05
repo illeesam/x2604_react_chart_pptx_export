@@ -1,5 +1,5 @@
 /**
- * base01WidgetPanel — 위젯 패널 핵심 로직 (재활용 가능 컴포넌트)
+ * Base01WidgetPanel — 위젯 패널 핵심 로직 (재활용 가능 컴포넌트)
  *
  * Props:
  *   raw  {object}  widgetListData 원본 JSON (widgets[], reportTitle 등)
@@ -523,6 +523,7 @@ export default function Base01WidgetPanel({ raw, deck }) {
   const [responsiveCols, setResponsiveCols]       = useState(3);        // 반응형 열 수 (1~5)
   const [exportFormat, setExportFormat]           = useState('pdf');    // 선택된 다운로드 형식
   const [exportBusy, setExportBusy]               = useState(false);    // 다운로드 진행 중 여부
+  const [expanded, setExpanded]                           = useState(false); // true: 좌우 여백 제거, 전체 너비 확장
   const [widgetDataOpenIndex, setWidgetDataOpenIndex]     = useState(null); // JSON 팝오버 열린 위젯 인덱스
   const [widgetLayoutOpenIndex, setWidgetLayoutOpenIndex] = useState(null); // 위치 정보 팝오버 열린 위젯 인덱스
   const [showLayoutInfo, setShowLayoutInfo]               = useState(false); // 배치 속성 레이어 표시 여부
@@ -705,7 +706,7 @@ export default function Base01WidgetPanel({ raw, deck }) {
 
   /* ── 렌더 ── */
   return (
-    <div className="mx-auto max-w-[1400px] px-4 pb-16 pt-6 sm:px-6">
+    <div className={expanded ? 'px-2 pb-16 pt-6' : 'mx-auto max-w-[1400px] px-4 pb-16 pt-6 sm:px-6'}>
 
       {/* 배치 속성 정보 레이어 — showLayoutInfo 시 화면 위에 오버레이 */}
       {showLayoutInfo && (
@@ -803,6 +804,32 @@ export default function Base01WidgetPanel({ raw, deck }) {
               </select>
             </div>
 
+            {/* 좌우 확장 토글 */}
+            <div
+              className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/90 px-3 py-2"
+              title="좌우 여백을 제거해 전체 너비로 확장"
+            >
+              <IconExpand className="shrink-0 text-slate-500" />
+              <span className="text-xs font-semibold text-slate-600">좌우 확장</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={expanded}
+                onClick={() => setExpanded((v) => !v)}
+                className={[
+                  'relative h-7 w-12 shrink-0 rounded-full transition-colors focus:outline-none',
+                  expanded ? 'bg-violet-600' : 'bg-slate-300',
+                ].join(' ')}
+              >
+                <span
+                  className={[
+                    'absolute top-0.5 left-0.5 size-6 rounded-full bg-white shadow transition-transform duration-200',
+                    expanded ? 'translate-x-5' : 'translate-x-0',
+                  ].join(' ')}
+                />
+              </button>
+            </div>
+
             {/* 위젯 편집 토글 — 반응형 ON 시 비활성 */}
             <div
               className={[
@@ -880,11 +907,13 @@ export default function Base01WidgetPanel({ raw, deck }) {
       {responsive ? (
         <div className="rounded-xl border border-slate-300 p-4" style={gridStyle}>
           <div className="grid gap-5" style={{
-            // auto-fill + minmax: responsiveCols 가 최대 열 수이되 화면이 좁아지면 자동으로 N-1, N-2 ... 1열까지 축소
-            // 1열은 항상 1fr 고정, 나머지는 minWidth = floor((1200 - gap*(N-1)) / N) 으로 계산
+            // 최대 N열 + 화면 축소 시 자동 감소:
+            //   minmax( max(MIN_PX, calc(100% / N)), 1fr )
+            //   → 컨테이너가 아무리 넓어도 각 열 최소폭 = 컨테이너/N 이므로 N열 초과 불가
+            //   → 컨테이너가 좁아지면 MIN_PX 가 기준이 되어 N-1, N-2 … 1열로 자연 감소
             gridTemplateColumns: responsiveCols === 1
               ? '1fr'
-              : `repeat(auto-fill, minmax(${Math.floor((1200 - 20 * (responsiveCols - 1)) / responsiveCols)}px, 1fr))`,
+              : `repeat(auto-fill, minmax(max(200px, calc(100% / ${responsiveCols})), 1fr))`,
           }}>
             {reversedWidgets.map((w, i) => {
               const label = w.widgetAttr?.tabLabel || w.widgetType;
@@ -1076,6 +1105,17 @@ function IconSpinner() {
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor"
         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+    </svg>
+  );
+}
+
+/** 좌우 확장 아이콘 — 좌우 확장 토글 */
+function IconExpand({ className = '' }) {
+  return (
+    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M5 9H3V3h6v2M19 9h2V3h-6v2M5 15H3v6h6v-2M19 15h2v6h-6v-2"
+        stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9 12h6M12 9l3 3-3 3" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
