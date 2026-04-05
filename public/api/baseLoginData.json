@@ -1,0 +1,14 @@
+{
+  "formHints": {
+    "defaultId": "demo",
+    "defaultPassword": "demo1234"
+  },
+  "users": [
+    {
+      "id": "demo",
+      "password": "demo1234",
+      "name": "데모 사용자",
+      "email": "demo@reporthub.local"
+    }
+  ]
+}

@@ -1,9 +1,5 @@
-// 미리보기 모달 — 자체 axios 데이터 조회, 8개 탭 페이지 렌더, 현재/전체 다운로드 처리
-import { useRef, useState, useEffect } from 'react';
-import axios from 'axios';
-import CoverPage from '../CoverPage';
-import ChartPage from '../widget/Chart01Widget';
-import { DataPage4, DataPage5, DataPage6, DataPage7 } from '../widget/Data01Widget';
+// 미리보기 모달 — 부모가 전달한 reportDeck( reportListData.json 에서 추출 ) 렌더
+import { useRef, useState } from 'react';
 import {
   downloadPdf, downloadPpt, downloadImage, downloadReadme,
   downloadAllImages, downloadAllPdf, downloadAllPpt,
@@ -11,44 +7,24 @@ import {
   downloadHtml, downloadAllHtml,
   makeFilename,
 } from '../../utils/downloadHelpers';
+import { getPageElement, getPreviewPageCount } from '../../utils/capturePages';
+import {
+  getBannerSubtitleForPage,
+  getContentPageCount,
+  getTabLabelForPage,
+} from '../../utils/previewLayout';
 
-const TOTAL_PAGES = 8;
-
-export default function PreviewModal({ onClose }) {
-  const [data, setData] = useState(null);
-  const [loadingData, setLoadingData] = useState(true);
-  const [loadError, setLoadError] = useState(null);
+export default function PreviewModal({ reportDeck, onClose }) {
+  const data = reportDeck;
   const [currentPage, setCurrentPage] = useState(0);
   const [downloading, setDownloading] = useState(null);
-  const [progress, setProgress] = useState({ current: 0, total: 7 });
+  const [progress, setProgress] = useState({ current: 0, total: 1 });
   const contentRef = useRef(null);
 
-  useEffect(() => {
-    setLoadingData(true);
-    setLoadError(null);
-    axios.get('/api/pptData.json')
-      .then(res => setData(res.data))
-      .catch(err => setLoadError(err.message))
-      .finally(() => setLoadingData(false));
-  }, []);
+  const totalPages = data ? getPreviewPageCount(data) : 0;
+  const contentPages = data ? getContentPageCount(data) : 0;
 
-  if (loadingData) {
-    return (
-      <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-5">
-        <div className="flex h-[92vh] w-full max-w-[920px] flex-col items-center justify-center rounded-xl bg-white shadow-2xl">
-          <div className="flex flex-col items-center gap-3">
-            <div
-              className="size-9 rounded-full border-4 border-slate-200 border-t-blue-500"
-              style={{ animation: 'spin-modal 0.8s linear infinite' }}
-            />
-            <p className="m-0 text-sm text-slate-500">데이터 로딩중...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (loadError || !data) {
+  if (!data) {
     return (
       <div
         className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-5"
@@ -56,7 +32,7 @@ export default function PreviewModal({ onClose }) {
       >
         <div className="flex h-[92vh] w-full max-w-[920px] flex-col items-center justify-center rounded-xl bg-white shadow-2xl">
           <div className="flex flex-col items-center gap-3">
-            <p className="m-0 text-sm text-red-700">데이터 로드 실패: {loadError}</p>
+            <p className="m-0 text-sm text-red-700">미리보기 데이터가 없습니다.</p>
             <button
               type="button"
               className="cursor-pointer rounded-md border border-slate-200 bg-white px-5 py-2 text-[13px] font-semibold text-slate-700"
@@ -70,12 +46,12 @@ export default function PreviewModal({ onClose }) {
     );
   }
 
-  const goTo = (p) => setCurrentPage(Math.max(0, Math.min(TOTAL_PAGES - 1, p)));
+  const goTo = (p) => setCurrentPage(Math.max(0, Math.min(totalPages - 1, p)));
   const onProg = (cur, total) => setProgress({ current: cur, total });
 
   const run = async (key, fn) => {
     setDownloading(key);
-    setProgress({ current: 0, total: 7 });
+    setProgress({ current: 0, total: Math.max(totalPages, 1) });
     try { await fn(); } finally { setDownloading(null); }
   };
 
@@ -93,20 +69,6 @@ export default function PreviewModal({ onClose }) {
   const handleAllPptx = () => run('allPptx', () => downloadAllPptx(data, makeFilename(src, '전체', '전체PPTX')));
   const handleAllHtml = () => run('allHtml', () => downloadAllHtml(data, makeFilename(src, '전체', '전체HTML'), onProg));
 
-  const renderPage = () => {
-    switch (currentPage) {
-      case 0: return <CoverPage data={data} />;
-      case 1: return <ChartPage pageData={data.charts.page1} pageNum={1} />;
-      case 2: return <ChartPage pageData={data.charts.page2} pageNum={2} />;
-      case 3: return <ChartPage pageData={data.charts.page3} pageNum={3} />;
-      case 4: return <DataPage4 data={data.dataPages.page4} />;
-      case 5: return <DataPage5 data={data.dataPages.page5} />;
-      case 6: return <DataPage6 data={data.dataPages.page6} />;
-      case 7: return <DataPage7 data={data.dataPages.page7} />;
-      default: return null;
-    }
-  };
-
   const isBusy = !!downloading;
   const isAll = ['allImg', 'allPdf', 'allPpt', 'allPptx', 'allHtml'].includes(downloading);
 
@@ -121,7 +83,7 @@ export default function PreviewModal({ onClose }) {
           <div>
             <div className="text-[15px] font-bold text-white">{data.reportTitle}</div>
             <div className="mt-0.5 text-[11px] text-slate-400">
-              미리보기 — {currentPage === 0 ? '표지' : `${currentPage}P`} / 총 {TOTAL_PAGES - 1}페이지
+              미리보기 — {getBannerSubtitleForPage(data, currentPage)} / 총 {contentPages}페이지
             </div>
           </div>
           <button
@@ -136,8 +98,8 @@ export default function PreviewModal({ onClose }) {
 
         <div className="flex flex-wrap items-center gap-0 border-b border-slate-200 bg-slate-100 px-3.5 py-2">
           <div className="flex flex-wrap items-center gap-1 py-0.5">
-            <span className="mr-1 whitespace-nowrap rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">
-              현재 탭 ({currentPage}P)
+            <span className="mr-1 max-w-[200px] truncate whitespace-nowrap rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-bold text-slate-500" title={getTabLabelForPage(data, currentPage)}>
+              현재: {getTabLabelForPage(data, currentPage)}
             </span>
             <Btn label="README" icon="📝" k="readme" downloading={downloading} onClick={handleReadme} color="#6366f1" />
             <Btn label="이미지" icon="🖼️" k="image" downloading={downloading} onClick={handleImage} color="#0ea5e9" />
@@ -151,7 +113,7 @@ export default function PreviewModal({ onClose }) {
 
           <div className="flex flex-wrap items-center gap-1 py-0.5">
             <span className="mr-1 whitespace-nowrap rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">
-              전체 7페이지
+              전체 {contentPages}페이지
             </span>
             <Btn label="전체이미지" icon="🖼️" k="allImg" downloading={downloading} onClick={handleAllImg} color="#0284c7" />
             <Btn label="전체PDF" icon="📄" k="allPdf" downloading={downloading} onClick={handleAllPdf} color="#dc2626" />
@@ -170,14 +132,14 @@ export default function PreviewModal({ onClose }) {
             <div className="mt-1 h-1 overflow-hidden rounded-sm bg-blue-200">
               <div
                 className="h-full rounded-sm bg-blue-500 transition-[width] duration-300"
-                style={{ width: `${(progress.current / progress.total) * 100}%` }}
+                style={{ width: `${(progress.current / Math.max(progress.total, 1)) * 100}%` }}
               />
             </div>
           </div>
         )}
 
         <div className="flex gap-1 overflow-x-auto border-b border-slate-200 bg-slate-50 px-3.5 py-2">
-          {Array.from({ length: TOTAL_PAGES }, (_, i) => i).map((p) => (
+          {Array.from({ length: totalPages }, (_, i) => i).map((p) => (
             <button
               key={p}
               type="button"
@@ -187,14 +149,15 @@ export default function PreviewModal({ onClose }) {
                   : 'border-slate-200 bg-white text-slate-500'
               }`}
               onClick={() => goTo(p)}
+              title={getBannerSubtitleForPage(data, p)}
             >
-              {p === 0 ? '📋 표지' : p <= 3 ? `📊 ${p}P` : `📋 ${p}P`}
+              {getTabLabelForPage(data, p)}
             </button>
           ))}
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto p-0" ref={contentRef}>
-          {renderPage()}
+          {getPageElement(data, currentPage)}
         </div>
 
         <div className="flex items-center justify-between rounded-b-xl border-t border-slate-200 bg-slate-50 px-5 py-2.5">
@@ -207,14 +170,14 @@ export default function PreviewModal({ onClose }) {
             ← 이전
           </button>
           <div className="flex items-center gap-1.5">
-            {Array.from({ length: TOTAL_PAGES }, (_, i) => i).map((p) => (
+            {Array.from({ length: totalPages }, (_, i) => i).map((p) => (
               <button
                 key={p}
                 type="button"
                 className={`size-2 cursor-pointer rounded-full transition-colors ${
                   p === currentPage ? 'bg-blue-500' : 'bg-slate-300'
                 }`}
-                aria-label={`${p + 1}페이지`}
+                aria-label={getTabLabelForPage(data, p)}
                 onClick={() => goTo(p)}
               />
             ))}
@@ -223,7 +186,7 @@ export default function PreviewModal({ onClose }) {
             type="button"
             className="cursor-pointer rounded-md border border-slate-200 bg-white px-4 py-2 text-[13px] font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-30"
             onClick={() => goTo(currentPage + 1)}
-            disabled={currentPage === TOTAL_PAGES - 1}
+            disabled={currentPage === totalPages - 1}
           >
             다음 →
           </button>

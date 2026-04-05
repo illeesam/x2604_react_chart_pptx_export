@@ -4,30 +4,45 @@ import html2canvas from 'html2canvas';
 import CoverPage from '../components/CoverPage';
 import ChartPage from '../components/widget/Chart01Widget';
 import { DataPage4, DataPage5, DataPage6, DataPage7 } from '../components/widget/Data01Widget';
+import { buildPreviewSlots, getPreviewPageCount } from './previewLayout';
 
-// 보고서 전체 탭 개수 (표지 0 + 차트 1~3 + 데이터 4~7)
-export const TOTAL_PAGES = 8; // 0=커버, 1~3=차트, 4~7=데이터
+export { getPreviewPageCount } from './previewLayout';
 
-// pageNum(0~7)에 해당하는 페이지 React 엘리먼트 반환
+const DATA_PAGE_BY_KEY = {
+  page4: DataPage4,
+  page5: DataPage5,
+  page6: DataPage6,
+  page7: DataPage7,
+};
+
 export function getPageElement(data, pageNum) {
-  switch (pageNum) {
-    case 0: return <CoverPage data={data} />;
-    case 1: return <ChartPage pageData={data.charts.page1} pageNum={1} />;
-    case 2: return <ChartPage pageData={data.charts.page2} pageNum={2} />;
-    case 3: return <ChartPage pageData={data.charts.page3} pageNum={3} />;
-    case 4: return <DataPage4 data={data.dataPages.page4} />;
-    case 5: return <DataPage5 data={data.dataPages.page5} />;
-    case 6: return <DataPage6 data={data.dataPages.page6} />;
-    case 7: return <DataPage7 data={data.dataPages.page7} />;
-    default: return null;
+  const { slots } = buildPreviewSlots(data);
+  const slot = slots[pageNum];
+  if (!slot) return null;
+  switch (slot.type) {
+    case 'cover':
+      return <CoverPage data={data} />;
+    case 'chart':
+      return <ChartPage pageData={data.charts[slot.key]} pageNum={slot.chartNum} />;
+    case 'data': {
+      const Comp = DATA_PAGE_BY_KEY[slot.key];
+      if (!Comp) return null;
+      return <Comp data={data.dataPages[slot.key]} />;
+    }
+    default:
+      return null;
   }
 }
 
 /**
- * 8페이지(0~7)를 화면 밖에 순서대로 렌더·캡처해 canvas 배열로 반환
- * onProgress(현재 인덱스, 전체)로 진행률 전달
+ * 미리보기 슬롯 순서대로 화면 밖 렌더·캡처 → canvas 배열
+ * onProgress(현재 1~N, 전체 N)
  */
 export async function captureAllPages(data, onProgress) {
+  const total = getPreviewPageCount(data);
+  const { chartKeys } = buildPreviewSlots(data);
+  const nChart = chartKeys.length;
+
   const container = document.createElement('div');
   container.style.cssText = [
     'position:fixed', 'left:-9999px', 'top:0',
@@ -38,16 +53,14 @@ export async function captureAllPages(data, onProgress) {
 
   const results = [];
 
-  for (let p = 0; p < TOTAL_PAGES; p++) {
-    // p: 캡처 중인 페이지 번호 (0~7)
-    if (onProgress) onProgress(p + 1, TOTAL_PAGES);
+  for (let p = 0; p < total; p++) {
+    if (onProgress) onProgress(p + 1, total);
 
     const root = createRoot(container);
     root.render(getPageElement(data, p));
 
-    // 커버·데이터 페이지는 짧게, 차트 페이지는 길게 (렌더 안정화 대기)
-    const wait = p === 0 ? 300 : p <= 3 ? 900 : 400;
-    await new Promise(r => setTimeout(r, wait));
+    const wait = p === 0 ? 300 : p <= nChart ? 900 : 400;
+    await new Promise((r) => setTimeout(r, wait));
 
     const canvas = await html2canvas(container, {
       scale: 1.8,
@@ -56,10 +69,10 @@ export async function captureAllPages(data, onProgress) {
       logging: false,
     });
 
-    results.push({ canvas, pageNum: p }); // pageNum: 캡처된 페이지 인덱스
+    results.push({ canvas, pageNum: p });
 
     root.unmount();
-    await new Promise(r => setTimeout(r, 80));
+    await new Promise((r) => setTimeout(r, 80));
   }
 
   document.body.removeChild(container);

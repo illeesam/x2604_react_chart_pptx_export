@@ -1,28 +1,57 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import { ROUTE_PATHS } from '../routes/routePaths';
+import { API_JSON } from '../utils/apiConfig';
 
-// 메인(홈) — 안내 카드와 보고서 목록으로 이동
+// 메인(홈) — baseMainData.json 기반 안내·링크 카드
 export default function BaseMain() {
+  const [payload, setPayload] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    axios
+      .get(API_JSON.baseMain)
+      .then((res) => setPayload(res.data))
+      .catch((err) => setError(err.message));
+  }, []);
+
+  const hero = payload?.hero;
+  const links = Array.isArray(payload?.links) ? payload.links : [];
+
   return (
     <div className="mx-auto max-w-[1100px] px-6 py-8">
       <div className="mb-7">
         <h1 className="m-0 text-[26px] font-extrabold text-slate-800">
-          ReportHub에 오신 것을 환영합니다
+          {hero?.title ?? 'ReportHub'}
         </h1>
         <p className="mt-3 text-[15px] leading-relaxed text-slate-500">
-          차트·데이터 기반 보고서를 미리보고 PDF, PPT, PPTX, HTML 등으로 보낼 수 있습니다.
+          {hero?.description ?? (error ? `메인 데이터를 불러오지 못했습니다: ${error}` : '불러오는 중…')}
         </p>
       </div>
 
       <div className="flex flex-wrap gap-4">
-        <Link
-          to={ROUTE_PATHS.REPORT_LIST}
-          className="flex min-w-[260px] flex-col items-start gap-2 rounded-xl border border-slate-200 bg-white p-5 text-inherit no-underline shadow-sm transition-shadow hover:shadow-md"
-        >
-          <span className="text-[28px]">📋</span>
-          <span className="text-[17px] font-bold text-slate-800">보고서 목록</span>
-          <span className="text-[13px] text-slate-500">보고서 미리보기 및 다운로드</span>
-        </Link>
+        {links.map((item) => {
+          const to =
+            item.path === '/reportList' ? ROUTE_PATHS.REPORT_LIST : item.path || ROUTE_PATHS.REPORT_LIST;
+          return (
+            <Link
+              key={to + (item.title || '')}
+              to={to}
+              className="flex min-w-[260px] flex-col items-start gap-2 rounded-xl border border-slate-200 bg-white p-5 text-inherit no-underline shadow-sm transition-shadow hover:shadow-md"
+            >
+              <span className="text-[28px]">{item.icon ?? '📋'}</span>
+              <span className="text-[17px] font-bold text-slate-800">{item.title ?? '링크'}</span>
+              <span className="text-[13px] text-slate-500">{item.subtitle ?? ''}</span>
+            </Link>
+          );
+        })}
+        {!payload && !error ? (
+          <div className="text-sm text-slate-400">카드 데이터 로딩…</div>
+        ) : null}
+        {payload && links.length === 0 ? (
+          <div className="text-sm text-slate-500">표시할 링크가 없습니다. baseMainData.json 의 links 를 확인하세요.</div>
+        ) : null}
       </div>
     </div>
   );

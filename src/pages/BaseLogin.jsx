@@ -1,20 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import {
-  DEFAULT_LOGIN_ID,
-  DEFAULT_LOGIN_PASSWORD,
-} from '../auth/authDefaults';
 import { ROUTE_PATHS } from '../routes/routePaths';
 
-// 로그인 — 기본 계정(demo / demo1234)으로 데모 인증
+// 로그인 — baseLoginData.json 사용자 목록으로 인증 (실패 시 안내)
 export default function BaseLogin() {
-  const { user, login } = useAuth();
+  const { user, login, authReady, formHints } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const fromPath = location.state?.from?.pathname;
-  const [id, setId] = useState(DEFAULT_LOGIN_ID);
-  const [password, setPassword] = useState(DEFAULT_LOGIN_PASSWORD);
+  const [id, setId] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -23,9 +19,17 @@ export default function BaseLogin() {
     }
   }, [user, navigate, fromPath]);
 
+  useEffect(() => {
+    if (authReady) {
+      setId(formHints.defaultId);
+      setPassword(formHints.defaultPassword);
+    }
+  }, [authReady, formHints.defaultId, formHints.defaultPassword]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
+    if (!authReady) return;
     if (login(id.trim(), password)) {
       navigate(fromPath || ROUTE_PATHS.BASE_MAIN, { replace: true });
       return;
@@ -39,9 +43,10 @@ export default function BaseLogin() {
         <h1 className="mb-2 text-[22px] font-extrabold text-slate-800">로그인</h1>
         <p className="mb-5 text-[13px] text-slate-500">
           데모 계정:{' '}
-          <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">{DEFAULT_LOGIN_ID}</code>{' '}
+          <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">{formHints.defaultId}</code>{' '}
           /{' '}
-          <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">{DEFAULT_LOGIN_PASSWORD}</code>
+          <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">{formHints.defaultPassword}</code>
+          <span className="block pt-1 text-[11px] text-slate-400">계정 정보는 /api/baseLoginData.json 에서 불러옵니다.</span>
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
@@ -52,6 +57,7 @@ export default function BaseLogin() {
               value={id}
               onChange={(e) => setId(e.target.value)}
               autoComplete="username"
+              disabled={!authReady}
             />
           </label>
           <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-slate-600">
@@ -62,14 +68,16 @@ export default function BaseLogin() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
+              disabled={!authReady}
             />
           </label>
           {error ? <p className="m-0 text-[13px] text-red-700">{error}</p> : null}
           <button
             type="submit"
-            className="mt-1 cursor-pointer rounded-lg bg-blue-500 px-4 py-3 text-[15px] font-bold text-white"
+            className="mt-1 cursor-pointer rounded-lg bg-blue-500 px-4 py-3 text-[15px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={!authReady}
           >
-            로그인
+            {authReady ? '로그인' : '인증 정보 로딩…'}
           </button>
         </form>
 
