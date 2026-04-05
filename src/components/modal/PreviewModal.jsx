@@ -11,6 +11,7 @@ import {
   makeFilename,
 } from '../../utils/downloadHelpers';
 import { API_JSON } from '../../utils/apiConfig';
+import { normalizePreviewModalData } from '../../utils/normalizePreviewModalData';
 import { getPageElement, getPreviewPageCount } from '../../utils/capturePages';
 import {
   getBannerSubtitleForPage,
@@ -38,7 +39,7 @@ export default function PreviewModal({ onClose }) {
     axiosLib
       .get(API_JSON.previewModalData)
       .then((res) => {
-        if (!cancelled) setData(res.data);
+        if (!cancelled) setData(normalizePreviewModalData(res.data));
       })
       .catch((err) => {
         if (!cancelled) setLoadError(err.message);

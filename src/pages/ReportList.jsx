@@ -6,6 +6,7 @@ import axiosLib from '../utils/axiosLib';
 import PreviewModal from '../components/modal/PreviewModal';
 import { downloadReadme, downloadAllPpt, downloadAllPdf, downloadAllPptx, downloadAllHtml, makeFilename } from '../utils/downloadHelpers';
 import { API_JSON } from '../utils/apiConfig';
+import { normalizePreviewModalData } from '../utils/normalizePreviewModalData';
 
 // ── 내려받기 버튼 배경색 (선택 형식별) ──
 const TYPE_COLORS = {
@@ -45,7 +46,7 @@ export default function ReportList() {
       .then(([listRes, deckRes]) => {
         if (cancelled) return;
         setListPayload(listRes.data);
-        setReportData(deckRes.data);
+        setReportData(normalizePreviewModalData(deckRes.data));
       })
       .catch((err) => {
         if (!cancelled) setError(err.message);
