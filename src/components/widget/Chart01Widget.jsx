@@ -404,14 +404,15 @@ function TipNode({ label, value, depth, isLast }) {
 
   // 리프 노드 — 값 유형별 색상 표시
   if (!isObj) {
-    const color = typeof value === 'string' ? '#7dd3fc'
-      : typeof value === 'number' ? '#86efac'
-      : '#fde68a';
+    const valCls =
+      typeof value === 'string' ? 'text-sky-300'
+      : typeof value === 'number' ? 'text-green-300'
+      : 'text-amber-200';
     return (
-      <div style={{ paddingLeft: pad, lineHeight: '1.6', whiteSpace: 'nowrap' }}>
-        <span style={{ color: '#475569' }}>{br} </span>
-        <span style={{ color: '#e2e8f0' }}>{label}: </span>
-        <span style={{ color }}>{JSON.stringify(value)}</span>
+      <div className="whitespace-nowrap leading-relaxed" style={{ paddingLeft: pad }}>
+        <span className="text-slate-600">{br} </span>
+        <span className="text-slate-200">{label}: </span>
+        <span className={valCls}>{JSON.stringify(value)}</span>
       </div>
     );
   }
@@ -425,13 +426,14 @@ function TipNode({ label, value, depth, isLast }) {
     <div>
       {/* 접기/펼치기 헤더 행 */}
       <div
-        style={{ paddingLeft: pad, lineHeight: '1.6', cursor: 'pointer', whiteSpace: 'nowrap' }}
+        className="cursor-pointer whitespace-nowrap leading-relaxed"
+        style={{ paddingLeft: pad }}
         onClick={() => setOpen(o => !o)}
       >
-        <span style={{ color: '#475569' }}>{br} </span>
-        <span style={{ color: '#fbbf24' }}>{open ? '▼' : '▶'} </span>
-        <span style={{ color: '#e2e8f0' }}>{label}</span>
-        <span style={{ color: '#475569' }}> {isArr ? `[${value.length}]` : `{${children.length}}`}</span>
+        <span className="text-slate-600">{br} </span>
+        <span className="text-amber-400">{open ? '▼' : '▶'} </span>
+        <span className="text-slate-200">{label}</span>
+        <span className="text-slate-600"> {isArr ? `[${value.length}]` : `{${children.length}}`}</span>
       </div>
       {/* 펼침 상태일 때 자식 노드 렌더 */}
       {open && children.map((c, i) => (
@@ -503,17 +505,21 @@ function EditNode({ label, value, path, setDraft, depth, isLast, onRemove }) {
 
   // 리프 노드
   if (!isObj) {
-    const color = typeof value === 'string' ? '#7dd3fc'
-      : typeof value === 'number' ? '#86efac'
-      : '#fde68a';
+    const valCls =
+      typeof value === 'string' ? 'text-sky-300'
+      : typeof value === 'number' ? 'text-green-300'
+      : 'text-amber-200';
     return (
-      <div style={{ paddingLeft: pad, lineHeight: '1.8', display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'nowrap' }}>
-        <span style={{ color: '#475569', flexShrink: 0 }}>{br} </span>
-        <span style={{ color: '#e2e8f0', flexShrink: 0 }}>{label}: </span>
+      <div
+        className="flex flex-nowrap items-center gap-1 leading-[1.8]"
+        style={{ paddingLeft: pad }}
+      >
+        <span className="shrink-0 text-slate-600">{br} </span>
+        <span className="shrink-0 text-slate-200">{label}: </span>
         {editing ? (
           <input
             autoFocus
-            style={ep.input}
+            className="w-[130px] rounded border border-blue-500 bg-slate-800 px-1.5 py-px font-mono text-xs text-green-300 outline-none"
             value={editVal}
             onChange={e => setEditVal(e.target.value)}
             onKeyDown={e => {
@@ -528,14 +534,22 @@ function EditNode({ label, value, path, setDraft, depth, isLast, onRemove }) {
           />
         ) : (
           <span
-            style={{ color, cursor: 'pointer', textDecoration: 'underline dotted', flexShrink: 0 }}
+            className={`shrink-0 cursor-pointer underline decoration-dotted ${valCls}`}
             onClick={() => { setEditVal(String(value)); setEditing(true); }}
           >
             {JSON.stringify(value)}
           </span>
         )}
         {/* 상위 배열에서 이 항목 삭제 */}
-        {onRemove && <button style={ep.rmBtn} onClick={onRemove}>×</button>}
+        {onRemove && (
+          <button
+            type="button"
+            className="shrink-0 cursor-pointer rounded bg-red-900 px-1.5 text-[11px] font-bold leading-[17px] text-red-300"
+            onClick={onRemove}
+          >
+            ×
+          </button>
+        )}
       </div>
     );
   }
@@ -548,22 +562,38 @@ function EditNode({ label, value, path, setDraft, depth, isLast, onRemove }) {
   return (
     <div>
       {/* 헤더 행 — 토글 + 배열이면 + 버튼 */}
-      <div style={{ paddingLeft: pad, lineHeight: '1.8', display: 'flex', alignItems: 'center', gap: 4 }}>
-        <span style={{ color: '#475569', flexShrink: 0 }}>{br} </span>
+      <div className="flex items-center gap-1 leading-[1.8]" style={{ paddingLeft: pad }}>
+        <span className="shrink-0 text-slate-600">{br} </span>
         <span
-          style={{ color: '#fbbf24', cursor: 'pointer', flexShrink: 0 }}
+          className="shrink-0 cursor-pointer text-amber-400"
           onClick={() => setOpen(o => !o)}
         >
           {open ? '▼' : '▶'}{' '}
         </span>
-        <span style={{ color: '#e2e8f0', cursor: 'pointer' }} onClick={() => setOpen(o => !o)}>{label}</span>
-        <span style={{ color: '#475569', cursor: 'pointer' }} onClick={() => setOpen(o => !o)}>
+        <span className="cursor-pointer text-slate-200" onClick={() => setOpen(o => !o)}>{label}</span>
+        <span className="cursor-pointer text-slate-600" onClick={() => setOpen(o => !o)}>
           {' '}{isArr ? `[${value.length}]` : `{${children.length}}`}
         </span>
         {/* 배열이면 항목 추가 버튼 */}
-        {isArr && <button style={ep.addBtn} onClick={addItem}>+</button>}
+        {isArr && (
+          <button
+            type="button"
+            className="shrink-0 cursor-pointer rounded bg-green-900 px-1.5 text-[11px] font-bold leading-[17px] text-green-300"
+            onClick={addItem}
+          >
+            +
+          </button>
+        )}
         {/* 상위 배열에서 이 노드 삭제 */}
-        {onRemove && <button style={ep.rmBtn} onClick={onRemove}>×</button>}
+        {onRemove && (
+          <button
+            type="button"
+            className="shrink-0 cursor-pointer rounded bg-red-900 px-1.5 text-[11px] font-bold leading-[17px] text-red-300"
+            onClick={onRemove}
+          >
+            ×
+          </button>
+        )}
       </div>
       {/* 자식 노드 목록 */}
       {open && children.map((c, i) => (
@@ -595,34 +625,46 @@ function EditPanel({ chartData, onSave, onClose }) {
   const typeColor = TYPE_COLORS[draft.type] || '#64748b';
 
   return (
-    <div style={ep.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={ep.panel}>
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75"
+      onClick={e => e.target === e.currentTarget && onClose()}
+    >
+      <div className="flex max-h-[82vh] w-full max-w-[560px] flex-col rounded-[10px] border border-slate-800 bg-slate-900 shadow-[0_20px_60px_rgba(0,0,0,0.7)]">
         {/* 편집 패널 헤더 */}
-        <div style={ep.header}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ ...ep.typeBadge, background: typeColor }}>
+        <div className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span
+              className="shrink-0 rounded px-2 py-0.5 text-[11px] font-bold text-white"
+              style={{ backgroundColor: typeColor }}
+            >
               {TYPE_LABELS[draft.type] || draft.type}
             </span>
-            <span style={ep.panelTitle}>{draft.title}</span>
+            <span className="text-[13px] font-semibold text-slate-200">{draft.title}</span>
           </div>
-          <button style={ep.closeBtn} onClick={onClose}>✕</button>
+          <button
+            type="button"
+            className="shrink-0 cursor-pointer border-0 bg-transparent text-base leading-none text-slate-400"
+            onClick={onClose}
+          >
+            ✕
+          </button>
         </div>
 
         {/* 조작 안내 */}
-        <div style={ep.guide}>
+        <div className="flex flex-wrap items-center gap-2 bg-slate-800 px-4 py-1.5 text-[10px] text-slate-400">
           <span>클릭: 값 편집</span>
-          <span style={ep.sep}>│</span>
+          <span className="text-slate-700">│</span>
           <span>Enter: 확인</span>
-          <span style={ep.sep}>│</span>
+          <span className="text-slate-700">│</span>
           <span>Esc: 취소</span>
-          <span style={ep.sep}>│</span>
-          <span style={{ color: '#86efac' }}>+: 항목 추가</span>
-          <span style={ep.sep}>│</span>
-          <span style={{ color: '#fca5a5' }}>×: 항목 삭제</span>
+          <span className="text-slate-700">│</span>
+          <span className="text-green-300">+: 항목 추가</span>
+          <span className="text-slate-700">│</span>
+          <span className="text-red-300">×: 항목 삭제</span>
         </div>
 
         {/* 트리 편집 본문 */}
-        <div style={ep.body}>
+        <div className="flex-1 overflow-y-auto px-4 py-2.5 font-mono text-xs leading-relaxed">
           <EditNode
             label="📊 chart"
             value={draft}
@@ -634,9 +676,21 @@ function EditPanel({ chartData, onSave, onClose }) {
         </div>
 
         {/* 푸터 — 취소 / 저장·적용 */}
-        <div style={ep.footer}>
-          <button style={ep.cancelBtn} onClick={onClose}>취소</button>
-          <button style={ep.saveBtn} onClick={() => onSave(draft)}>저장·적용</button>
+        <div className="flex justify-end gap-2 border-t border-slate-800 px-4 py-2.5">
+          <button
+            type="button"
+            className="cursor-pointer rounded-md border border-slate-700 bg-slate-800 px-4 py-1.5 text-xs text-slate-400"
+            onClick={onClose}
+          >
+            취소
+          </button>
+          <button
+            type="button"
+            className="cursor-pointer rounded-md border-0 bg-blue-500 px-5 py-1.5 text-xs font-semibold text-white"
+            onClick={() => onSave(draft)}
+          >
+            저장·적용
+          </button>
         </div>
       </div>
     </div>
@@ -661,21 +715,24 @@ function ChartCard({ chartData, onUpdate }) {
   const typeColor = TYPE_COLORS[chartData.type] || '#64748b';
 
   return (
-    <div style={styles.chartCard}>
+    <div className="relative rounded-lg border border-slate-200 bg-[#fafafa] px-3 py-2.5">
       {/* 제목 행 — 타입 뱃지 + 제목 + 편집 아이콘 */}
-      <div style={styles.titleRow}>
+      <div className="mb-2 flex items-center gap-1.5">
         {/* 타입 뱃지 — 호버 시 트리 툴팁 */}
         <span
-          style={{ ...styles.typeBadge, background: typeColor, cursor: 'help' }}
+          className="shrink-0 cursor-help whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-bold text-white"
+          style={{ backgroundColor: typeColor }}
           onMouseEnter={() => setTip(true)}
           onMouseLeave={() => setTip(false)}
         >
           {typeLabel}
         </span>
-        <span style={styles.chartTitle}>{chartData.title}</span>
+        <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-xs font-semibold text-slate-600">
+          {chartData.title}
+        </span>
         {/* 편집 아이콘 — 맨 우측 */}
         <span
-          style={styles.editBtn}
+          className="ml-auto shrink-0 cursor-pointer select-none text-[13px] leading-none opacity-75"
           onClick={() => setEditOpen(true)}
           title="차트 데이터 편집"
         >
@@ -685,13 +742,13 @@ function ChartCard({ chartData, onUpdate }) {
 
       {/* 윈도우트리 구조 툴팁 — 뱃지 호버 시 */}
       {tip && (
-        <div style={styles.tooltip}>
+        <div className="pointer-events-none absolute left-0 top-[30px] z-[9999] max-h-[380px] min-w-[300px] max-w-[420px] overflow-y-auto rounded-lg border border-slate-800 bg-slate-900 px-3.5 py-2.5 font-mono text-[11px] leading-[1.7] text-slate-400 shadow-[0_8px_24px_rgba(0,0,0,0.5)]">
           <TipNode label="📊 chart" value={chartData} depth={0} isLast={true} />
         </div>
       )}
 
       {/* 차트 캔버스 영역 */}
-      <div style={styles.chartBody}>
+      <div className="h-[170px]">
         <Renderer data={chartData} />
       </div>
 
@@ -729,14 +786,16 @@ export default function ChartPage({ pageData, pageNum }) {
     setLocalCharts(prev => prev.map((c, i) => i === idx ? newData : c));
 
   return (
-    <div style={styles.page}>
+    <div className="box-border w-full bg-white px-6 py-5">
       {/* 페이지 번호 뱃지 + 섹션 제목 */}
-      <div style={styles.pageHeader}>
-        <span style={styles.pageNum}>PAGE {pageNum}</span>
-        <h2 style={styles.pageTitle}>{pageData.title}</h2>
+      <div className="mb-4 flex items-center gap-3 border-b-2 border-blue-500 pb-2.5">
+        <span className="rounded bg-blue-500 px-2.5 py-0.5 text-xs font-bold text-white">
+          PAGE {pageNum}
+        </span>
+        <h2 className="m-0 text-base font-bold text-slate-800">{pageData.title}</h2>
       </div>
       {/* 2열 × 3행 차트 그리드 */}
-      <div style={styles.chartGrid}>
+      <div className="grid grid-cols-2 gap-3">
         {localCharts.map((chart, idx) => (
           <ChartCard
             key={idx}
@@ -748,153 +807,3 @@ export default function ChartPage({ pageData, pageNum }) {
     </div>
   );
 }
-
-/* ──────────────────────────────────────────────────────────────
-   EditPanel 전용 스타일 (ep)
-────────────────────────────────────────────────────────────── */
-const ep = {
-  // 전체 화면 어두운 오버레이
-  overlay: {
-    position: 'fixed', inset: 0,
-    background: 'rgba(0,0,0,0.75)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    zIndex: 9999,
-  },
-  // 패널 컨테이너 (다크 테마)
-  panel: {
-    background: '#0f172a',
-    borderRadius: 10,
-    width: '100%', maxWidth: 560,
-    maxHeight: '82vh',
-    display: 'flex', flexDirection: 'column',
-    boxShadow: '0 20px 60px rgba(0,0,0,0.7)',
-    border: '1px solid #1e293b',
-  },
-  // 패널 헤더
-  header: {
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    padding: '12px 16px', borderBottom: '1px solid #1e293b',
-  },
-  typeBadge: {
-    color: '#fff', fontSize: 11, fontWeight: 700,
-    padding: '2px 8px', borderRadius: 4, flexShrink: 0,
-  },
-  panelTitle: { color: '#e2e8f0', fontSize: 13, fontWeight: 600 },
-  closeBtn: {
-    background: 'none', border: 'none', color: '#94a3b8',
-    cursor: 'pointer', fontSize: 16, lineHeight: 1, flexShrink: 0,
-  },
-  // 조작 안내 바
-  guide: {
-    display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap',
-    padding: '6px 16px', background: '#1e293b',
-    fontSize: 10, color: '#94a3b8',
-  },
-  sep: { color: '#334155' },
-  // 트리 편집 본문 (스크롤)
-  body: {
-    flex: 1, overflowY: 'auto', padding: '10px 16px',
-    fontFamily: 'ui-monospace, Consolas, "Courier New", monospace',
-    fontSize: 12, lineHeight: 1.6,
-  },
-  // 푸터 버튼 영역
-  footer: {
-    display: 'flex', justifyContent: 'flex-end', gap: 8,
-    padding: '10px 16px', borderTop: '1px solid #1e293b',
-  },
-  cancelBtn: {
-    padding: '6px 16px', borderRadius: 6,
-    background: '#1e293b', border: '1px solid #334155',
-    color: '#94a3b8', cursor: 'pointer', fontSize: 12,
-  },
-  saveBtn: {
-    padding: '6px 20px', borderRadius: 6,
-    background: '#3b82f6', border: 'none',
-    color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600,
-  },
-  // 인라인 편집 입력창
-  input: {
-    background: '#1e293b', border: '1px solid #3b82f6',
-    color: '#86efac', fontSize: 12, padding: '1px 6px',
-    borderRadius: 4, outline: 'none',
-    fontFamily: 'ui-monospace, Consolas, "Courier New", monospace',
-    width: 130,
-  },
-  // 배열 항목 추가 버튼
-  addBtn: {
-    background: '#166534', border: 'none', color: '#86efac',
-    cursor: 'pointer', fontSize: 11, fontWeight: 700,
-    borderRadius: 3, padding: '0 6px', lineHeight: '17px', flexShrink: 0,
-  },
-  // 배열 항목 삭제 버튼
-  rmBtn: {
-    background: '#7f1d1d', border: 'none', color: '#fca5a5',
-    cursor: 'pointer', fontSize: 11, fontWeight: 700,
-    borderRadius: 3, padding: '0 6px', lineHeight: '17px', flexShrink: 0,
-  },
-};
-
-/* ──────────────────────────────────────────────────────────────
-   ChartCard / ChartPage 공용 인라인 스타일 (styles)
-────────────────────────────────────────────────────────────── */
-const styles = {
-  // 차트 슬라이드 페이지 전체 래퍼
-  page: {
-    width: '100%', padding: '20px 24px',
-    boxSizing: 'border-box', background: '#fff',
-  },
-  // PAGE 뱃지 + 섹션 제목 행
-  pageHeader: {
-    display: 'flex', alignItems: 'center', gap: 12,
-    marginBottom: 16, paddingBottom: 10, borderBottom: '2px solid #3b82f6',
-  },
-  pageNum: {
-    background: '#3b82f6', color: '#fff',
-    fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 4,
-  },
-  pageTitle: { margin: 0, fontSize: 16, fontWeight: 700, color: '#1e293b' },
-  // 2열 × 3행 그리드
-  chartGrid: {
-    display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12,
-  },
-  // 개별 차트 카드 (position: relative — 툴팁 기준)
-  chartCard: {
-    border: '1px solid #e2e8f0', borderRadius: 8,
-    padding: '10px 12px', background: '#fafafa',
-    position: 'relative',
-  },
-  // 제목 행 — 뱃지 + 제목 + 편집 아이콘 가로 배치
-  titleRow: {
-    display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8,
-  },
-  // 차트 타입 뱃지
-  typeBadge: {
-    flexShrink: 0, color: '#fff', fontSize: 10, fontWeight: 700,
-    padding: '2px 6px', borderRadius: 4, whiteSpace: 'nowrap',
-  },
-  chartTitle: {
-    fontSize: 12, fontWeight: 600, color: '#475569',
-    overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
-    flex: 1,
-  },
-  // 편집 아이콘 — 제목 행 맨 우측
-  editBtn: {
-    marginLeft: 'auto', cursor: 'pointer', fontSize: 13,
-    lineHeight: 1, flexShrink: 0, userSelect: 'none', opacity: 0.75,
-  },
-  // 차트 캔버스 높이 — 6개 표시를 위해 조정
-  chartBody: { height: 170 },
-  // 뱃지 호버 윈도우트리 툴팁
-  tooltip: {
-    position: 'absolute', top: 30, left: 0,
-    zIndex: 9999,
-    background: '#0f172a', color: '#94a3b8',
-    fontFamily: 'ui-monospace, Consolas, "Courier New", monospace',
-    fontSize: 11, lineHeight: 1.7,
-    padding: '10px 14px', borderRadius: 8,
-    border: '1px solid #1e293b',
-    boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-    minWidth: 300, maxWidth: 420, maxHeight: 380, overflowY: 'auto',
-    pointerEvents: 'none',
-  },
-};

@@ -34,92 +34,49 @@ export default function BaseLogin() {
   };
 
   return (
-    <div style={s.wrap}>
-      <div style={s.card}>
-        <h1 style={s.title}>로그인</h1>
-        <p style={s.hint}>
-          데모 계정: <code style={s.code}>{DEFAULT_LOGIN_ID}</code> /{' '}
-          <code style={s.code}>{DEFAULT_LOGIN_PASSWORD}</code>
+    <div className="flex min-h-[60vh] items-center justify-center p-6">
+      <div className="w-full max-w-[400px] rounded-xl border border-slate-200 bg-white p-7 pb-5 shadow-lg">
+        <h1 className="mb-2 text-[22px] font-extrabold text-slate-800">로그인</h1>
+        <p className="mb-5 text-[13px] text-slate-500">
+          데모 계정:{' '}
+          <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">{DEFAULT_LOGIN_ID}</code>{' '}
+          /{' '}
+          <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">{DEFAULT_LOGIN_PASSWORD}</code>
         </p>
 
-        <form onSubmit={handleSubmit} style={s.form}>
-          <label style={s.label}>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
+          <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-slate-600">
             아이디
             <input
-              style={s.input}
+              className="rounded-lg border border-slate-300 px-3 py-2.5 text-[15px]"
               value={id}
               onChange={(e) => setId(e.target.value)}
               autoComplete="username"
             />
           </label>
-          <label style={s.label}>
+          <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-slate-600">
             비밀번호
             <input
-              style={s.input}
+              className="rounded-lg border border-slate-300 px-3 py-2.5 text-[15px]"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
             />
           </label>
-          {error ? <p style={s.error}>{error}</p> : null}
-          <button type="submit" style={s.submit}>
+          {error ? <p className="m-0 text-[13px] text-red-700">{error}</p> : null}
+          <button
+            type="submit"
+            className="mt-1 cursor-pointer rounded-lg bg-blue-500 px-4 py-3 text-[15px] font-bold text-white"
+          >
             로그인
           </button>
         </form>
 
-        <Link to={ROUTE_PATHS.BASE_MAIN} style={s.back}>
+        <Link to={ROUTE_PATHS.BASE_MAIN} className="mt-4 inline-block text-[13px] text-blue-500">
           ← 메인으로
         </Link>
       </div>
     </div>
   );
 }
-
-const s = {
-  wrap: {
-    minHeight: '60vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 400,
-    background: '#fff',
-    borderRadius: 12,
-    padding: '28px 28px 20px',
-    boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
-    border: '1px solid #e2e8f0',
-  },
-  title: { margin: '0 0 8px', fontSize: 22, fontWeight: 800, color: '#1e293b' },
-  hint: { margin: '0 0 20px', fontSize: 13, color: '#64748b' },
-  code: {
-    background: '#f1f5f9',
-    padding: '2px 6px',
-    borderRadius: 4,
-    fontSize: 12,
-  },
-  form: { display: 'flex', flexDirection: 'column', gap: 14 },
-  label: { display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, fontWeight: 600, color: '#475569' },
-  input: {
-    padding: '10px 12px',
-    borderRadius: 8,
-    border: '1px solid #cbd5e1',
-    fontSize: 15,
-  },
-  error: { margin: 0, fontSize: 13, color: '#b91c1c' },
-  submit: {
-    marginTop: 4,
-    padding: '12px 16px',
-    border: 'none',
-    borderRadius: 8,
-    background: '#3b82f6',
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: 700,
-    cursor: 'pointer',
-  },
-  back: { display: 'inline-block', marginTop: 18, fontSize: 13, color: '#3b82f6' },
-};

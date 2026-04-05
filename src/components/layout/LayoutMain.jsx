@@ -9,23 +9,10 @@ export default function LayoutMain({ children }) {
   const showBottom = shouldShowLayoutBottom(pathname);
 
   return (
-    <div style={shell}>
+    <div className="flex min-h-screen flex-col bg-slate-100">
       <LayoutHeader />
-      <main style={main}>{children}</main>
+      <main className="min-h-0 flex-1 pt-2">{children}</main>
       {showBottom ? <LayoutBottom /> : null}
     </div>
   );
 }
-
-const shell = {
-  minHeight: '100vh',
-  background: '#f1f5f9',
-  display: 'flex',
-  flexDirection: 'column',
-};
-
-const main = {
-  flex: 1,
-  paddingTop: 8,
-  minHeight: 0,
-};
