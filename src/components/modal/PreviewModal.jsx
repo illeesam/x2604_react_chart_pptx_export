@@ -1,5 +1,6 @@
-// 미리보기 모달 — 부모가 전달한 reportDeck( reportListData.json 에서 추출 ) 렌더
-import { useRef, useState } from 'react';
+// 미리보기 모달 — 열릴 때마다 previewModalData.json axios 로드
+import { useRef, useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   downloadPdf, downloadPpt, downloadImage, downloadReadme,
   downloadAllImages, downloadAllPdf, downloadAllPpt,
@@ -7,6 +8,7 @@ import {
   downloadHtml, downloadAllHtml,
   makeFilename,
 } from '../../utils/downloadHelpers';
+import { API_JSON } from '../../utils/apiConfig';
 import { getPageElement, getPreviewPageCount } from '../../utils/capturePages';
 import {
   getBannerSubtitleForPage,
@@ -14,17 +16,41 @@ import {
   getTabLabelForPage,
 } from '../../utils/previewLayout';
 
-export default function PreviewModal({ reportDeck, onClose }) {
-  const data = reportDeck;
+export default function PreviewModal({ onClose }) {
+  const [data, setData] = useState(null);
+  const [loadingData, setLoadingData] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [downloading, setDownloading] = useState(null);
   const [progress, setProgress] = useState({ current: 0, total: 1 });
   const contentRef = useRef(null);
 
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingData(true);
+    setLoadError(null);
+    setData(null);
+    setCurrentPage(0);
+    axios
+      .get(API_JSON.previewModal)
+      .then((res) => {
+        if (!cancelled) setData(res.data);
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err.message);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingData(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const totalPages = data ? getPreviewPageCount(data) : 0;
   const contentPages = data ? getContentPageCount(data) : 0;
 
-  if (!data) {
+  if (loadingData) {
     return (
       <div
         className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-5"
@@ -32,7 +58,35 @@ export default function PreviewModal({ reportDeck, onClose }) {
       >
         <div className="flex h-[92vh] w-full max-w-[920px] flex-col items-center justify-center rounded-xl bg-white shadow-2xl">
           <div className="flex flex-col items-center gap-3">
-            <p className="m-0 text-sm text-red-700">미리보기 데이터가 없습니다.</p>
+            <div
+              className="size-9 rounded-full border-4 border-slate-200 border-t-blue-500"
+              style={{ animation: 'spin-modal 0.8s linear infinite' }}
+            />
+            <p className="m-0 text-sm text-slate-500">
+              미리보기 데이터 로딩… <code className="text-xs">{API_JSON.previewModal}</code>
+            </p>
+            <button
+              type="button"
+              className="cursor-pointer text-[13px] text-slate-500 underline"
+              onClick={onClose}
+            >
+              취소
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError || !data) {
+    return (
+      <div
+        className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-5"
+        onClick={(e) => e.target === e.currentTarget && onClose()}
+      >
+        <div className="flex h-[92vh] w-full max-w-[920px] flex-col items-center justify-center rounded-xl bg-white shadow-2xl">
+          <div className="flex flex-col items-center gap-3 px-6 text-center">
+            <p className="m-0 text-sm text-red-700">미리보기 데이터 로드 실패: {loadError}</p>
             <button
               type="button"
               className="cursor-pointer rounded-md border border-slate-200 bg-white px-5 py-2 text-[13px] font-semibold text-slate-700"

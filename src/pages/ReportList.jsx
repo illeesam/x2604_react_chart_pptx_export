@@ -1,9 +1,9 @@
-// 보고서 목록 페이지 — reportListData.json 로드, 표 행 + 미리보기·다운로드 덱
-import React, { useState, useEffect, useMemo } from 'react';
+// 보고서 목록 — reportListData.json(표·페이지 메타) + previewModalData.json(슬라이드 덱)
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import PreviewModal from '../components/modal/PreviewModal';
 import { downloadReadme, downloadAllPpt, downloadAllPdf, downloadAllPptx, downloadAllHtml, makeFilename } from '../utils/downloadHelpers';
-import { API_JSON, extractReportDeck } from '../utils/apiConfig';
+import { API_JSON } from '../utils/apiConfig';
 
 const TYPE_COLORS = {
   readme: '#6366f1',
@@ -22,22 +22,35 @@ const STATUS_BADGE_CLASS = {
 
 export default function ReportList() {
   const [listPayload, setListPayload] = useState(null);
+  const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const [downloading, setDownloading] = useState(null);
   const [selectedType, setSelectedType] = useState({});
 
-  const reportData = useMemo(() => extractReportDeck(listPayload), [listPayload]);
   const reports = listPayload?.reports ?? [];
   const pageMeta = listPayload?.page;
 
   useEffect(() => {
-    axios
-      .get(API_JSON.reportList)
-      .then((res) => setListPayload(res.data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    Promise.all([axios.get(API_JSON.reportList), axios.get(API_JSON.previewModal)])
+      .then(([listRes, deckRes]) => {
+        if (cancelled) return;
+        setListPayload(listRes.data);
+        setReportData(deckRes.data);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const handlePreview = () => setShowPreview(true);
@@ -144,7 +157,7 @@ export default function ReportList() {
                     type="button"
                     className="mr-1.5 cursor-pointer rounded-md border border-blue-500 bg-white px-3.5 py-1.5 text-[13px] font-semibold text-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
                     onClick={handlePreview}
-                    disabled={loading || !reportData}
+                    disabled={loading}
                   >
                     미리보기
                   </button>
@@ -182,13 +195,13 @@ export default function ReportList() {
 
       <div className="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-[13px] text-sky-700">
         <strong>데이터 로드:</strong> 화면 로드 시{' '}
-        <code className="rounded bg-sky-100 px-1">{API_JSON.reportList}</code> 을 axios 로 불러옵니다.
-        표 행은 <code className="rounded bg-sky-100 px-1">reports</code>, 미리보기·다운로드는 동일 파일의 차트·데이터 슬라이드 필드를 사용합니다.
+        <code className="rounded bg-sky-100 px-1">{API_JSON.reportList}</code> (목록·표) 와{' '}
+        <code className="rounded bg-sky-100 px-1">{API_JSON.previewModal}</code> (목록에서 내려받기용 덱) 을
+        axios 로 불러옵니다. 미리보기 모달은 열릴 때마다{' '}
+        <code className="rounded bg-sky-100 px-1">{API_JSON.previewModal}</code> 을 다시 조회합니다.
       </div>
 
-      {showPreview && reportData && (
-        <PreviewModal reportDeck={reportData} onClose={() => setShowPreview(false)} />
-      )}
+      {showPreview && <PreviewModal onClose={() => setShowPreview(false)} />}
     </div>
   );
 }
