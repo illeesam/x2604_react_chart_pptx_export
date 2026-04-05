@@ -2,7 +2,7 @@
  * 라우트 정의 (단일 출처)
  * - path: URL
  * - title: 페이지 제목·네비 라벨 등
- * - requiresAuth: true 이면 로그인 없이 접근 시 로그인으로내며
+ * - requiresAuth: true 이면 미로그인 접근 시 로그인 페이지로 이동
  * - showLayoutBottom: true 이면 LayoutMain 에서 LayoutBottom 표시
  *
  * 새 페이지: 아래 ROUTES 에 객체 한 줄 추가 후 routeConfig 의 PAGE_BY_KEY 에 컴포넌트 연결
