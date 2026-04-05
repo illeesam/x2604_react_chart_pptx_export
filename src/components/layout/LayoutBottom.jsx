@@ -1,4 +1,4 @@
-/** 하단 영역 — 메인·로그인 페이지에서만 노출 */
+/** 하단 영역 — routePaths.js 의 showLayoutBottom 이 true 인 경로에서만 노출 */
 export default function LayoutBottom() {
   const year = new Date().getFullYear();
   return (

@@ -1,7 +1,13 @@
 import MainPage from '../pages/MainPage';
 import ListPage from '../pages/ListPage';
 import LoginPage from '../pages/LoginPage';
-import { ROUTE_PATHS } from './routePaths';
+import { ROUTES, ROUTE_PATHS } from './routePaths';
+
+const PAGE_BY_KEY = {
+  MAIN: MainPage,
+  REPORTS: ListPage,
+  LOGIN: LoginPage,
+};
 
 /** 상단 메뉴에 노출할 항목 (메인 | 보고서 목록) */
 export const navMenuItems = [
@@ -10,17 +16,12 @@ export const navMenuItems = [
 ];
 
 /**
- * 앱 라우트 목록 — 새 페이지는 { path, Component, title? } 한 줄 추가
- * - path: routePaths.js 의 상수 사용 권장
- * - title: 메타·추후 브레드크럼용 (선택)
+ * 앱 라우트 목록 — ROUTES 메타(path, requiresAuth, showLayoutBottom, title) + 컴포넌트
  */
-export const appRoutes = [
-  { path: ROUTE_PATHS.MAIN, Component: MainPage, title: '메인' },
-  {
-    path: ROUTE_PATHS.REPORTS,
-    Component: ListPage,
-    title: '보고서 목록',
-    requiresAuth: true,
-  },
-  { path: ROUTE_PATHS.LOGIN, Component: LoginPage, title: '로그인' },
-];
+export const appRoutes = ROUTES.map((r) => ({
+  path: r.path,
+  Component: PAGE_BY_KEY[r.key],
+  title: r.title,
+  requiresAuth: r.requiresAuth,
+  showLayoutBottom: r.showLayoutBottom,
+}));
