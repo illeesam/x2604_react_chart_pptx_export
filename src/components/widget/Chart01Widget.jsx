@@ -1,5 +1,6 @@
 // Chart01Widget — 18종 차트 위젯 (윈도우트리 툴팁 + 편집 패널 포함)
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { CHART_LAYOUT_GRID_CLASS, resolveChartPageLayout } from '../../utils/previewDeckLayout';
 import {
   Chart as ChartJS,
   CategoryScale, LinearScale, PointElement, LineElement, BarElement,
@@ -771,37 +772,39 @@ function ChartCard({ chartData, onUpdate }) {
    · pageNum: 미리보기 탭 번호 (1~3)
 ────────────────────────────────────────────────────────────── */
 export default function ChartPage({ pageData, pageNum }) {
-  // chart1~chart6 를 로컬 상태로 관리 (편집 반영) — Hook은 항상 최상단 호출
-  const [localCharts, setLocalCharts] = useState(() =>
-    pageData
-      ? [pageData.chart1, pageData.chart2, pageData.chart3,
-         pageData.chart4, pageData.chart5, pageData.chart6].filter(Boolean)
-      : []
-  );
+  const { charts: initialCharts, layoutType, title } = resolveChartPageLayout(pageData);
+  const [localCharts, setLocalCharts] = useState(() => initialCharts.map((c) => JSON.parse(JSON.stringify(c))));
+
+  useEffect(() => {
+    const { charts: next } = resolveChartPageLayout(pageData);
+    setLocalCharts(next.map((c) => JSON.parse(JSON.stringify(c))));
+  }, [pageData]);
 
   if (!pageData) return null;
 
-  // idx 번째 차트 데이터를 newData 로 교체
+  const gridCols = CHART_LAYOUT_GRID_CLASS[layoutType] || CHART_LAYOUT_GRID_CLASS.grid2x3;
+
   const handleUpdate = (idx, newData) =>
-    setLocalCharts(prev => prev.map((c, i) => i === idx ? newData : c));
+    setLocalCharts((prev) => prev.map((c, i) => (i === idx ? newData : c)));
 
   return (
     <div className="box-border w-full bg-white px-6 py-5">
-      {/* 페이지 번호 뱃지 + 섹션 제목 */}
       <div className="mb-4 flex items-center gap-3 border-b-2 border-blue-500 pb-2.5">
         <span className="rounded bg-blue-500 px-2.5 py-0.5 text-xs font-bold text-white">
           PAGE {pageNum}
         </span>
-        <h2 className="m-0 text-base font-bold text-slate-800">{pageData.title}</h2>
+        <h2 className="m-0 text-base font-bold text-slate-800">{title}</h2>
+        {pageData.layoutType ? (
+          <span className="rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">
+            {pageData.layoutType}
+          </span>
+        ) : null}
       </div>
-      {/* 2열 × 3행 차트 그리드 */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className={`grid gap-3 ${gridCols}`}>
         {localCharts.map((chart, idx) => (
-          <ChartCard
-            key={idx}
-            chartData={chart}
-            onUpdate={(d) => handleUpdate(idx, d)}
-          />
+          <div key={idx} className="min-h-0" data-area-no={String(idx + 1)}>
+            <ChartCard chartData={chart} onUpdate={(d) => handleUpdate(idx, d)} />
+          </div>
         ))}
       </div>
     </div>

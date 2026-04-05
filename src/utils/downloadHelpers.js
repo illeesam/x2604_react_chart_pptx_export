@@ -4,6 +4,13 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import pptxgen from 'pptxgenjs';
+import {
+  resolveChartPageLayout,
+  resolveDataPage4,
+  resolveDataPage5,
+  resolveDataPage6,
+  resolveDataPage7,
+} from './previewDeckLayout';
 
 /* ──────────────────────────────────────────
    파일명 생성 유틸
@@ -27,11 +34,23 @@ export function makeFilename(source, id, btnLabel) {
 ────────────────────────────────────────── */
 export function downloadReadme(data, filename = 'README') {
   const d = data;
-  const p4 = d.dataPages.page4;
-  const p5 = d.dataPages.page5;
-  const p6 = d.dataPages.page6;
-  const p7 = d.dataPages.page7;
+  const p4 = resolveDataPage4(d.dataPages.page4);
+  const p5 = resolveDataPage5(d.dataPages.page5);
+  const p6 = resolveDataPage6(d.dataPages.page6);
+  const p7 = resolveDataPage7(d.dataPages.page7);
   const s = p4.summary;
+
+  const readmeChartRows = ['page1', 'page2', 'page3']
+    .map((pk) => {
+      const pg = d.charts?.[pk];
+      if (!pg) return '';
+      const { charts } = resolveChartPageLayout(pg);
+      return charts
+        .map((c, i) => `| ${pk} | Chart ${i + 1} | ${c.type} | ${c.title} |`)
+        .join('\n');
+    })
+    .filter(Boolean)
+    .join('\n');
 
   const md = `# ${d.reportTitle}
 
@@ -43,18 +62,7 @@ export function downloadReadme(data, filename = 'README') {
 
 | 페이지 | 차트 | 유형 | 제목 |
 |--------|------|------|------|
-| 1P | Chart 1 | Line | ${d.charts.page1.chart1.title} |
-| 1P | Chart 2 | Bar | ${d.charts.page1.chart2.title} |
-| 1P | Chart 3 | Pie | ${d.charts.page1.chart3.title} |
-| 1P | Chart 4 | Doughnut | ${d.charts.page1.chart4.title} |
-| 2P | Chart 1 | Radar | ${d.charts.page2.chart1.title} |
-| 2P | Chart 2 | PolarArea | ${d.charts.page2.chart2.title} |
-| 2P | Chart 3 | Bubble | ${d.charts.page2.chart3.title} |
-| 2P | Chart 4 | Scatter | ${d.charts.page2.chart4.title} |
-| 3P | Chart 1 | Horizontal Bar | ${d.charts.page3.chart1.title} |
-| 3P | Chart 2 | Stacked Bar | ${d.charts.page3.chart2.title} |
-| 3P | Chart 3 | Area | ${d.charts.page3.chart3.title} |
-| 3P | Chart 4 | Mixed | ${d.charts.page3.chart4.title} |
+${readmeChartRows}
 
 ---
 
@@ -451,10 +459,10 @@ function buildPptxSlides(pptx, data) {
   // ── 슬라이드 0: 커버 / 집계 요약 ──
   if (data.dataPages?.page4 && data.dataPages?.page5 && data.dataPages?.page6 && data.dataPages?.page7) {
     const slide = pptx.addSlide();
-    const p4 = data.dataPages.page4;
-    const p5 = data.dataPages.page5;
-    const p6 = data.dataPages.page6;
-    const p7 = data.dataPages.page7;
+    const p4 = resolveDataPage4(data.dataPages.page4);
+    const p5 = resolveDataPage5(data.dataPages.page5);
+    const p6 = resolveDataPage6(data.dataPages.page6);
+    const p7 = resolveDataPage7(data.dataPages.page7);
     const s  = p4.summary;
 
     // 헤더 (풀폭 다크 바)
@@ -548,23 +556,32 @@ function buildPptxSlides(pptx, data) {
   ].filter(({ key }) => data.charts?.[key]).forEach(({ key, title, num }) => {
     const slide = pptx.addSlide();
     const pg = data.charts[key];
+    const { charts: chartList, title: pageTitle } = resolveChartPageLayout(pg);
+    const headerTitle = pg.title || pageTitle || title;
 
     slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: '100%', h: 0.55, fill: { color: HBG } });
-    slide.addText(`PAGE ${num}  |  ${title}`, {
+    slide.addText(`PAGE ${num}  |  ${headerTitle}`, {
       x: 0.2, y: 0.08, w: 12.5, h: 0.38,
       fontSize: 14, bold: true, color: HFG,
     });
 
-    // LAYOUT_WIDE 13.33" 기준: 차트 2열 × 2행
-    // 각 차트 폭 = (12.93 - 0.1) / 2 ≈ 6.41"
-    const cW2 = 6.41, cH2 = 3.3, cGx = 0.11, cGy = 0.08;
-    const grid = [
-      { chart: pg.chart1, x: 0.2,           y: 0.63,           w: cW2, h: cH2 },
-      { chart: pg.chart2, x: 0.2 + cW2 + cGx, y: 0.63,           w: cW2, h: cH2 },
-      { chart: pg.chart3, x: 0.2,           y: 0.63 + cH2 + cGy, w: cW2, h: cH2 },
-      { chart: pg.chart4, x: 0.2 + cW2 + cGx, y: 0.63 + cH2 + cGy, w: cW2, h: cH2 },
-    ];
-    grid.forEach(({ chart, x, y, w, h }) => addChartToSlide(pptx, slide, chart, x, y, w, h));
+    const n = chartList.length;
+    const cols = 2;
+    const cW2 = 6.41;
+    const cGx = 0.11;
+    const cGy = 0.08;
+    const cH2 = n > 4 ? 2.05 : 3.3;
+    const x0 = 0.2;
+    const y0 = 0.63;
+
+    chartList.forEach((ch, i) => {
+      if (!ch) return;
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const x = x0 + col * (cW2 + cGx);
+      const y = y0 + row * (cH2 + cGy);
+      addChartToSlide(pptx, slide, ch, x, y, cW2, cH2);
+    });
   });
 
   // ─── 공용 헬퍼 ───────────────────────────────────────────────────────────────
@@ -601,7 +618,7 @@ function buildPptxSlides(pptx, data) {
   // 화면: 6개 KPI카드(2행×3열) + 분기별 실적 풀폭 테이블
   if (data.dataPages?.page4) {
     const slide = pptx.addSlide();
-    const pg = data.dataPages.page4;
+    const pg = resolveDataPage4(data.dataPages.page4);
     const s  = pg.summary;
 
     hdrSlide(slide, 4, pg.title);
@@ -643,7 +660,7 @@ function buildPptxSlides(pptx, data) {
   // 화면: 풀폭 제품 테이블 (제품명|매출|판매수량|평균단가|성장률|매출비중)
   if (data.dataPages?.page5) {
     const slide = pptx.addSlide();
-    const pg = data.dataPages.page5;
+    const pg = resolveDataPage5(data.dataPages.page5);
 
     hdrSlide(slide, 5, pg.title);
 
@@ -668,7 +685,7 @@ function buildPptxSlides(pptx, data) {
   // 화면: 5개 KPI 카드 가로 배열 + 세그먼트별 현황 풀폭 테이블
   if (data.dataPages?.page6) {
     const slide = pptx.addSlide();
-    const pg = data.dataPages.page6;
+    const pg = resolveDataPage6(data.dataPages.page6);
 
     hdrSlide(slide, 6, pg.title);
 
@@ -711,7 +728,7 @@ function buildPptxSlides(pptx, data) {
   // 화면: 4개 목표 카드 + 핵심 이니셔티브 테이블 + 리스크 현황 테이블
   if (data.dataPages?.page7) {
     const slide = pptx.addSlide();
-    const pg = data.dataPages.page7;
+    const pg = resolveDataPage7(data.dataPages.page7);
     const t  = pg.targets;
 
     hdrSlide(slide, 7, pg.title);

@@ -22,13 +22,6 @@ function sortKeys(keys) {
   });
 }
 
-const DATA_PAGE_TYPE = {
-  page4: 'DataPage4',
-  page5: 'DataPage5',
-  page6: 'DataPage6',
-  page7: 'DataPage7',
-};
-
 const { reportTitle, generatedAt, previewNav, charts, dataPages } = p;
 const widgets = [];
 
@@ -58,7 +51,7 @@ sortKeys(Object.keys(charts)).forEach((key, i) => {
 
 sortKeys(Object.keys(dataPages)).forEach((key) => {
   widgets.push({
-    widgetType: DATA_PAGE_TYPE[key] || 'DataPage4',
+    widgetType: 'Data01Widget',
     widgetAttr: {
       pageKey: key,
       tabLabel: previewNav.dataPageLabels?.[key],

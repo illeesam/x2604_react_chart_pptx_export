@@ -1,6 +1,6 @@
 /**
  * previewModalData.json — `widgets[]` 형식이면 렌더·다운로드용 기존 형태로 정규화
- * (CoverPage / Chart01Widget / DataPage4~7, widgetAttr 에 탭·pageKey 등)
+ * (CoverPage / Chart01Widget / Data01Widget + pageKey page4~7, widgetAttr 에 탭 등)
  */
 
 /**
@@ -39,6 +39,7 @@ export function normalizePreviewModalData(raw) {
       if (key && d != null) charts[key] = d;
       if (key && a.tabLabel != null) previewNav.chartPageLabels[key] = a.tabLabel;
     } else if (
+      widgetType === 'Data01Widget' ||
       widgetType === 'DataPage4' ||
       widgetType === 'DataPage5' ||
       widgetType === 'DataPage6' ||
