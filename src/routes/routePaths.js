@@ -27,7 +27,14 @@ export const ROUTES = [
   {
     key: 'WIDGET_LIST',
     path: '/widgetList',
-    title: '위젯 목록',
+    title: '기본 위젯 패널',
+    requiresAuth: true,
+    showLayoutBottom: false,
+  },
+  {
+    key: 'TAB_WIDGET_LIST',
+    path: '/tabWidgetList',
+    title: '탭 위젯 패널',
     requiresAuth: true,
     showLayoutBottom: false,
   },

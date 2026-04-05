@@ -515,7 +515,7 @@ function LayoutInfoLayer({ widgets, layouts, onClose }) {
    Base01WidgetPanel (default export)
    Props: raw {object}, deck {object}
 ──────────────────────────────────────────────────────────── */
-export default function Base01WidgetPanel({ raw, deck }) {
+export default function Base01WidgetPanel({ raw, deck, panelType = 'grid' }) {
   /* ── UI 상태 ── */
   const [layouts, setLayouts]                     = useState([]);       // 위젯별 { x, y, w, h, z }
   const [widgetEditEnabled, setWidgetEditEnabled] = useState(true);     // 드래그·리사이즈 활성 여부
@@ -528,6 +528,7 @@ export default function Base01WidgetPanel({ raw, deck }) {
   const [widgetLayoutOpenIndex, setWidgetLayoutOpenIndex] = useState(null); // 위치 정보 팝오버 열린 위젯 인덱스
   const [showLayoutInfo, setShowLayoutInfo]               = useState(false); // 배치 속성 레이어 표시 여부
   const [draggingIndex, setDraggingIndex]         = useState(null);     // 현재 드래그·리사이즈 중인 위젯 인덱스
+  const [activeTabIndex, setActiveTabIndex]       = useState(0);        // 탭 모드에서 현재 선택된 위젯 인덱스
 
   /* ── 파생 데이터 ── */
 
@@ -703,6 +704,176 @@ export default function Base01WidgetPanel({ raw, deck }) {
 
   /** 리사이즈 핸들 공통 클래스 */
   const handleCls = 'absolute z-30 size-3 rounded-sm border border-slate-400 bg-white shadow-sm hover:bg-blue-50';
+
+  /* ── 탭 모드 렌더 (panelType === 'tab') ── */
+  if (panelType === 'tab') {
+    const safeIdx   = Math.max(0, Math.min(activeTabIndex, reversedWidgets.length - 1));
+    const activeW   = reversedWidgets[safeIdx];
+    const activeLabel = activeW ? (activeW.widgetAttr?.tabLabel || activeW.widgetType) : '';
+
+    return (
+      <div className={expanded ? 'px-2 pb-16 pt-6' : 'mx-auto max-w-[1400px] px-4 pb-16 pt-6 sm:px-6'}>
+
+        {/* ── 헤더 ── */}
+        <header className="mb-4 border-b border-slate-200 pb-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+
+            {/* 좌측: 아이콘 + 제목 */}
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 shadow-md">
+                <IconLayoutWidgets className="text-white" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="m-0 flex flex-wrap items-center gap-2 text-xl font-bold tracking-tight text-slate-900">
+                  {raw?.reportTitle || '위젯 목록'}
+                  <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+                    <IconLayers className="text-slate-500" />
+                    탭 모드
+                  </span>
+                </h1>
+                <p className="m-0 mt-1 text-sm text-slate-500">
+                  <span className="font-medium text-slate-600">{activeLabel}</span>
+                  {' · '}
+                  {safeIdx + 1} / {reversedWidgets.length} 페이지
+                </p>
+              </div>
+            </div>
+
+            {/* 우측: 좌우 확장 + 다운로드 */}
+            <div className="flex flex-wrap items-center gap-3 sm:justify-end">
+              {/* 좌우 확장 토글 */}
+              <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/90 px-3 py-2">
+                <IconExpand className="shrink-0 text-slate-500" />
+                <span className="text-xs font-semibold text-slate-600">좌우 확장</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={expanded}
+                  onClick={() => setExpanded((v) => !v)}
+                  className={['relative h-7 w-12 shrink-0 rounded-full transition-colors focus:outline-none', expanded ? 'bg-violet-600' : 'bg-slate-300'].join(' ')}
+                >
+                  <span className={['absolute top-0.5 left-0.5 size-6 rounded-full bg-white shadow transition-transform duration-200', expanded ? 'translate-x-5' : 'translate-x-0'].join(' ')} />
+                </button>
+              </div>
+              {/* 다운로드 */}
+              <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm">
+                <IconDownload className="shrink-0 text-slate-500" />
+                <label htmlFor="tab-export-fmt" className="sr-only">보내기 형식</label>
+                <select
+                  id="tab-export-fmt"
+                  value={exportFormat}
+                  onChange={(e) => setExportFormat(e.target.value)}
+                  className="max-w-[11rem] cursor-pointer rounded-md border border-slate-200 bg-white py-1.5 pl-2 pr-8 text-xs font-semibold text-slate-700"
+                >
+                  <option value="pdf">PDF 다운로드 (전체 캡처)</option>
+                  <option value="pptx">PPTX 다운로드 (네이티브 슬라이드)</option>
+                </select>
+                <button
+                  type="button"
+                  disabled={exportBusy}
+                  onClick={handleExport}
+                  className="inline-flex items-center gap-1.5 rounded-md bg-slate-800 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {exportBusy ? <><IconSpinner />처리 중…</> : <><IconFileDown />받기</>}
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* ── 탭 바 ── */}
+        <div className="mb-3 flex gap-1.5 overflow-x-auto rounded-xl border border-slate-200 bg-slate-100 p-1.5">
+          {reversedWidgets.map((w, i) => {
+            const label = w.widgetAttr?.tabLabel || w.widgetType;
+            const isActive = i === safeIdx;
+            return (
+              <button
+                key={`tab-${i}`}
+                type="button"
+                onClick={() => setActiveTabIndex(i)}
+                className={[
+                  'flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors',
+                  isActive
+                    ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
+                    : 'text-slate-500 hover:bg-white/60 hover:text-slate-700',
+                ].join(' ')}
+                title={label}
+              >
+                {/* 탭 타입별 작은 색상 dot */}
+                <span className={[
+                  'size-2 shrink-0 rounded-full',
+                  w.widgetType === 'CoverPage'     ? 'bg-slate-400' :
+                  w.widgetType === 'Chart01Widget'  ? 'bg-blue-500'  :
+                  w.widgetType === 'Data01Widget'   ? 'bg-emerald-500' : 'bg-indigo-400',
+                ].join(' ')} />
+                {label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── 현재 탭 본문 ── */}
+        {activeW && (
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-md">
+            {/* 탭 콘텐츠 헤더 */}
+            <div className="flex h-10 items-center gap-2 border-b border-slate-200 bg-slate-50 px-3">
+              <WidgetLayoutInfoPanel
+                label={activeLabel}
+                widget={activeW}
+                layout={layouts[safeIdx]}
+                open={widgetLayoutOpenIndex === safeIdx}
+                onToggle={() => setWidgetLayoutOpenIndex((cur) => (cur === safeIdx ? null : safeIdx))}
+                onClose={closeWidgetLayoutPanel}
+              />
+              <WidgetDataJsonPanel
+                label={activeLabel}
+                widget={activeW}
+                open={widgetDataOpenIndex === safeIdx}
+                onToggle={() => setWidgetDataOpenIndex((cur) => (cur === safeIdx ? null : safeIdx))}
+                onClose={closeWidgetDataPanel}
+              />
+            </div>
+            {/* 콘텐츠 본문 */}
+            <div className="min-h-[500px] overflow-auto p-3">
+              {renderWidgetBody(activeW, deck)}
+            </div>
+          </div>
+        )}
+
+        {/* ── 이전 / 다음 네비 ── */}
+        <div className="mt-4 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => setActiveTabIndex((v) => Math.max(0, v - 1))}
+            disabled={safeIdx === 0}
+            className="cursor-pointer rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            ← 이전
+          </button>
+          {/* 도트 네비 */}
+          <div className="flex items-center gap-1.5">
+            {reversedWidgets.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setActiveTabIndex(i)}
+                className={['size-2 rounded-full transition-colors', i === safeIdx ? 'bg-blue-500' : 'bg-slate-300'].join(' ')}
+                aria-label={`${i + 1}번 탭으로 이동`}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setActiveTabIndex((v) => Math.min(reversedWidgets.length - 1, v + 1))}
+            disabled={safeIdx === reversedWidgets.length - 1}
+            className="cursor-pointer rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            다음 →
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   /* ── 렌더 ── */
   return (
@@ -911,9 +1082,10 @@ export default function Base01WidgetPanel({ raw, deck }) {
             //   minmax( max(MIN_PX, calc(100% / N)), 1fr )
             //   → 컨테이너가 아무리 넓어도 각 열 최소폭 = 컨테이너/N 이므로 N열 초과 불가
             //   → 컨테이너가 좁아지면 MIN_PX 가 기준이 되어 N-1, N-2 … 1열로 자연 감소
+            // gap(20px) * (N-1) 을 먼저 뺀 뒤 N 으로 나눠야 정확히 N열이 들어감
             gridTemplateColumns: responsiveCols === 1
               ? '1fr'
-              : `repeat(auto-fill, minmax(max(200px, calc(100% / ${responsiveCols})), 1fr))`,
+              : `repeat(auto-fill, minmax(max(200px, calc((100% - ${20 * (responsiveCols - 1)}px) / ${responsiveCols})), 1fr))`,
           }}>
             {reversedWidgets.map((w, i) => {
               const label = w.widgetAttr?.tabLabel || w.widgetType;
