@@ -1,6 +1,6 @@
 /**
  * previewModalData.json — `widgets[]` 형식이면 렌더·다운로드용 기존 형태로 정규화
- * (CoverPage / Chart01Widget / Data01Widget + pageKey page4~7, widgetAttr 에 탭 등)
+ * (CoverPage / Chart01Widget / Data01Widget + pageKey page1~4, widgetAttr 에 탭 등)
  */
 
 /**

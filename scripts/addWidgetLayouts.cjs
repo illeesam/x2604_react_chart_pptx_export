@@ -41,24 +41,24 @@ for (const w of deck.widgets || []) {
 
   if (isDataWidget && w.widgetData && !w.widgetData.areas) {
     const d = w.widgetData;
-    if (pk === 'page4') {
+    if (pk === 'page1') {
       w.widgetData = {
-        layoutType: 'dataPage4_stack',
+        layoutType: 'page1_stack',
         title: d.title,
         areas: {
           1: { summary: d.summary },
           2: { quarterlyData: d.quarterlyData },
         },
       };
-    } else if (pk === 'page5') {
+    } else if (pk === 'page2') {
       w.widgetData = {
-        layoutType: 'dataPage5_single',
+        layoutType: 'page2_single',
         title: d.title,
         areas: { 1: { products: d.products } },
       };
-    } else if (pk === 'page6') {
+    } else if (pk === 'page3') {
       w.widgetData = {
-        layoutType: 'dataPage6_stack',
+        layoutType: 'page3_stack',
         title: d.title,
         areas: {
           1: {
@@ -71,9 +71,9 @@ for (const w of deck.widgets || []) {
           2: { segments: d.segments },
         },
       };
-    } else if (pk === 'page7') {
+    } else if (pk === 'page4') {
       w.widgetData = {
-        layoutType: 'dataPage7_stack',
+        layoutType: 'page4_stack',
         title: d.title,
         areas: {
           1: { targets: d.targets },

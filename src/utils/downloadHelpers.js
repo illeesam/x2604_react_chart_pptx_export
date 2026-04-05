@@ -34,10 +34,10 @@ export function makeFilename(source, id, btnLabel) {
 ────────────────────────────────────────── */
 export function downloadReadme(data, filename = 'README') {
   const d = data;
-  const p4 = resolveDataPage4(d.dataPages.page4);
-  const p5 = resolveDataPage5(d.dataPages.page5);
-  const p6 = resolveDataPage6(d.dataPages.page6);
-  const p7 = resolveDataPage7(d.dataPages.page7);
+  const p4 = resolveDataPage4(d.dataPages.page1);
+  const p5 = resolveDataPage5(d.dataPages.page2);
+  const p6 = resolveDataPage6(d.dataPages.page3);
+  const p7 = resolveDataPage7(d.dataPages.page4);
   const s = p4.summary;
 
   const readmeChartRows = ['page1', 'page2', 'page3']
@@ -457,12 +457,12 @@ function buildPptxSlides(pptx, data) {
     ({ text, options: { bold: true, color: HFG, fill: { color: bg }, align: 'center' } });
 
   // ── 슬라이드 0: 커버 / 집계 요약 ──
-  if (data.dataPages?.page4 && data.dataPages?.page5 && data.dataPages?.page6 && data.dataPages?.page7) {
+  if (data.dataPages?.page1 && data.dataPages?.page2 && data.dataPages?.page3 && data.dataPages?.page4) {
     const slide = pptx.addSlide();
-    const p4 = resolveDataPage4(data.dataPages.page4);
-    const p5 = resolveDataPage5(data.dataPages.page5);
-    const p6 = resolveDataPage6(data.dataPages.page6);
-    const p7 = resolveDataPage7(data.dataPages.page7);
+    const p4 = resolveDataPage4(data.dataPages.page1);
+    const p5 = resolveDataPage5(data.dataPages.page2);
+    const p6 = resolveDataPage6(data.dataPages.page3);
+    const p7 = resolveDataPage7(data.dataPages.page4);
     const s  = p4.summary;
 
     // 헤더 (풀폭 다크 바)
@@ -616,12 +616,12 @@ function buildPptxSlides(pptx, data) {
 
   // ── 데이터 페이지 4: 경영 실적 요약 ──────────────────────────────────────────
   // 화면: 6개 KPI카드(2행×3열) + 분기별 실적 풀폭 테이블
-  if (data.dataPages?.page4) {
+  if (data.dataPages?.page1) {
     const slide = pptx.addSlide();
-    const pg = resolveDataPage4(data.dataPages.page4);
+    const pg = resolveDataPage4(data.dataPages.page1);
     const s  = pg.summary;
 
-    hdrSlide(slide, 4, pg.title);
+    hdrSlide(slide, 1, pg.title);
 
     // 6 KPI 카드 (2행 3열)
     const CARD_COLORS = ['3B82F6','EF4444','10B981','8B5CF6','F59E0B','06B6D4'];
@@ -658,11 +658,11 @@ function buildPptxSlides(pptx, data) {
 
   // ── 데이터 페이지 5: 제품별 성과 ────────────────────────────────────────────
   // 화면: 풀폭 제품 테이블 (제품명|매출|판매수량|평균단가|성장률|매출비중)
-  if (data.dataPages?.page5) {
+  if (data.dataPages?.page2) {
     const slide = pptx.addSlide();
-    const pg = resolveDataPage5(data.dataPages.page5);
+    const pg = resolveDataPage5(data.dataPages.page2);
 
-    hdrSlide(slide, 5, pg.title);
+    hdrSlide(slide, 2, pg.title);
 
     const prodRows = [
       [hCell('제품명'), hCell('매출'), hCell('판매수량'), hCell('평균단가'), hCell('성장률'), hCell('매출비중')],
@@ -683,11 +683,11 @@ function buildPptxSlides(pptx, data) {
 
   // ── 데이터 페이지 6: 고객 분석 ──────────────────────────────────────────────
   // 화면: 5개 KPI 카드 가로 배열 + 세그먼트별 현황 풀폭 테이블
-  if (data.dataPages?.page6) {
+  if (data.dataPages?.page3) {
     const slide = pptx.addSlide();
-    const pg = resolveDataPage6(data.dataPages.page6);
+    const pg = resolveDataPage6(data.dataPages.page3);
 
-    hdrSlide(slide, 6, pg.title);
+    hdrSlide(slide, 3, pg.title);
 
     // 5 KPI 카드 (가로 한 줄)
     const kpis = [
@@ -726,12 +726,12 @@ function buildPptxSlides(pptx, data) {
 
   // ── 데이터 페이지 7: 2025 전략 계획 ─────────────────────────────────────────
   // 화면: 4개 목표 카드 + 핵심 이니셔티브 테이블 + 리스크 현황 테이블
-  if (data.dataPages?.page7) {
+  if (data.dataPages?.page4) {
     const slide = pptx.addSlide();
-    const pg = resolveDataPage7(data.dataPages.page7);
+    const pg = resolveDataPage7(data.dataPages.page4);
     const t  = pg.targets;
 
-    hdrSlide(slide, 7, pg.title);
+    hdrSlide(slide, 4, pg.title);
 
     // 4 목표 카드 (가로 한 줄)
     const targets = [
@@ -812,13 +812,17 @@ export async function downloadAllPptx(data, filename = '전체PPTX') {
   await pptx.writeFile({ fileName: `${filename}.pptx` });
 }
 
+/** 미리보기 슬롯 인덱스 4~7 → dataPages 키 page1~page4 */
+const DATA_SLOT_TO_DATA_PAGE_KEY = { 4: 'page1', 5: 'page2', 6: 'page3', 7: 'page4' };
+
 /* 단일 슬라이드용 data 슬라이스 — pageNum: 0=표지(전체), 1~3=차트만, 4~7=데이터만 */
 function slicePageData(data, pageNum) {
-  if (pageNum === 0) return data; // 표지 슬라이드는 p4~p7 등 전역 참조가 있어 원본 유지
+  if (pageNum === 0) return data; // 표지 슬라이드는 데이터 페이지 전역 참조가 있어 원본 유지
   if (pageNum <= 3) {
     const key = `page${pageNum}`; // charts.page1 | page2 | page3
     return { charts: { [key]: data.charts[key] }, dataPages: {} };
   }
-  const key = `page${pageNum}`; // dataPages.page4 … page7
+  const key = DATA_SLOT_TO_DATA_PAGE_KEY[pageNum];
+  if (!key) return { charts: {}, dataPages: {} };
   return { charts: {}, dataPages: { [key]: data.dataPages[key] } };
 }

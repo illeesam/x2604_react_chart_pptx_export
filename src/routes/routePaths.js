@@ -25,6 +25,13 @@ export const ROUTES = [
     showLayoutBottom: false,
   },
   {
+    key: 'WIDGET_LIST',
+    path: '/widgetList',
+    title: '위젯 목록',
+    requiresAuth: true,
+    showLayoutBottom: false,
+  },
+  {
     key: 'BASE_LOGIN',
     path: '/baseLogin',
     title: '로그인',

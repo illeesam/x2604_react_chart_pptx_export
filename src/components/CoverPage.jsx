@@ -9,10 +9,10 @@ import {
 export default function CoverPage({ data }) {
   if (!data) return null;
 
-  const p4 = resolveDataPage4(data.dataPages.page4);
-  const p5 = resolveDataPage5(data.dataPages.page5);
-  const p6 = resolveDataPage6(data.dataPages.page6);
-  const p7 = resolveDataPage7(data.dataPages.page7);
+  const p4 = resolveDataPage4(data.dataPages.page1);
+  const p5 = resolveDataPage5(data.dataPages.page2);
+  const p6 = resolveDataPage6(data.dataPages.page3);
+  const p7 = resolveDataPage7(data.dataPages.page4);
   const summary = p4.summary;
 
   // ── 상단 KPI 카드 데이터 ──

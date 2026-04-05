@@ -90,8 +90,8 @@ export function resolveDataPage7(data) {
 }
 
 export const DATA_PAGE_LAYOUT_CLASS = {
-  dataPage4_stack: 'flex flex-col gap-5',
-  dataPage5_single: 'flex flex-col gap-4',
-  dataPage6_stack: 'flex flex-col gap-5',
-  dataPage7_stack: 'flex flex-col gap-5',
+  page1_stack: 'flex flex-col gap-5',
+  page2_single: 'flex flex-col gap-4',
+  page3_stack: 'flex flex-col gap-5',
+  page4_stack: 'flex flex-col gap-5',
 };

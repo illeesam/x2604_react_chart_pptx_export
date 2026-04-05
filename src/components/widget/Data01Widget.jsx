@@ -10,15 +10,15 @@ import {
 
 /** 슬롯 키 → JSON 에 layoutType 이 없을 때 기본 템플릿 */
 const PAGE_KEY_TO_DEFAULT_LAYOUT = {
-  page4: 'dataPage4_stack',
-  page5: 'dataPage5_single',
-  page6: 'dataPage6_stack',
-  page7: 'dataPage7_stack',
+  page1: 'page1_stack',
+  page2: 'page2_single',
+  page3: 'page3_stack',
+  page4: 'page4_stack',
 };
 
 function pageNumFromKey(pageKey) {
   const m = String(pageKey || '').match(/(\d+)/);
-  return m ? Number(m[1]) : 4;
+  return m ? Number(m[1]) : 1;
 }
 
 function AreaShell({ areaNo, children, className = '' }) {
@@ -32,11 +32,11 @@ function AreaShell({ areaNo, children, className = '' }) {
   );
 }
 
-function dataPage4_stack({ data, pageNum }) {
+function page1_stack({ data, pageNum }) {
   const flat = resolveDataPage4(data);
   const s = flat.summary;
   const layoutClass = data.layoutType
-    ? DATA_PAGE_LAYOUT_CLASS[data.layoutType] || DATA_PAGE_LAYOUT_CLASS.dataPage4_stack
+    ? DATA_PAGE_LAYOUT_CLASS[data.layoutType] || DATA_PAGE_LAYOUT_CLASS.page1_stack
     : '';
 
   const summaryCards = [
@@ -111,10 +111,10 @@ function dataPage4_stack({ data, pageNum }) {
   );
 }
 
-function dataPage5_single({ data, pageNum }) {
+function page2_single({ data, pageNum }) {
   const flat = resolveDataPage5(data);
   const layoutClass = data.layoutType
-    ? DATA_PAGE_LAYOUT_CLASS[data.layoutType] || DATA_PAGE_LAYOUT_CLASS.dataPage5_single
+    ? DATA_PAGE_LAYOUT_CLASS[data.layoutType] || DATA_PAGE_LAYOUT_CLASS.page2_single
     : '';
 
   const table = (
@@ -156,10 +156,10 @@ function dataPage5_single({ data, pageNum }) {
   );
 }
 
-function dataPage6_stack({ data, pageNum }) {
+function page3_stack({ data, pageNum }) {
   const flat = resolveDataPage6(data);
   const layoutClass = data.layoutType
-    ? DATA_PAGE_LAYOUT_CLASS[data.layoutType] || DATA_PAGE_LAYOUT_CLASS.dataPage6_stack
+    ? DATA_PAGE_LAYOUT_CLASS[data.layoutType] || DATA_PAGE_LAYOUT_CLASS.page3_stack
     : '';
 
   const kpis = [
@@ -239,13 +239,13 @@ function dataPage6_stack({ data, pageNum }) {
   );
 }
 
-function dataPage7_stack({ data, pageNum }) {
+function page4_stack({ data, pageNum }) {
   const flat = resolveDataPage7(data);
   const t = flat.targets;
   const STATUS_COLOR = { 진행중: '#10b981', 계획: '#3b82f6', 완료: '#6366f1' };
   const PROB_COLOR = { 높음: '#ef4444', 중: '#f59e0b', 낮음: '#10b981' };
   const layoutClass = data.layoutType
-    ? DATA_PAGE_LAYOUT_CLASS[data.layoutType] || DATA_PAGE_LAYOUT_CLASS.dataPage7_stack
+    ? DATA_PAGE_LAYOUT_CLASS[data.layoutType] || DATA_PAGE_LAYOUT_CLASS.page4_stack
     : '';
 
   const targetsBlock = (
@@ -370,10 +370,10 @@ function PageHeader({ num, title }) {
 }
 
 const LAYOUTS = {
-  dataPage4_stack: dataPage4_stack,
-  dataPage5_single: dataPage5_single,
-  dataPage6_stack: dataPage6_stack,
-  dataPage7_stack: dataPage7_stack,
+  page1_stack: page1_stack,
+  page2_single: page2_single,
+  page3_stack: page3_stack,
+  page4_stack: page4_stack,
 };
 
 /** pageKey + data.layoutType(또는 pageKey 기본값)으로 레이아웃 분기 */

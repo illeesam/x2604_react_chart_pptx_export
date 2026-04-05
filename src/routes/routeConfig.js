@@ -1,5 +1,6 @@
 import BaseMain from '../pages/BaseMain';
 import ReportList from '../pages/ReportList';
+import WidgetList from '../pages/WidgetList';
 import BaseLogin from '../pages/BaseLogin';
 import { ROUTES, ROUTE_PATHS } from './routePaths';
 
@@ -7,6 +8,7 @@ import { ROUTES, ROUTE_PATHS } from './routePaths';
 const PAGE_BY_KEY = {
   BASE_MAIN: BaseMain,
   REPORT_LIST: ReportList,
+  WIDGET_LIST: WidgetList,
   BASE_LOGIN: BaseLogin,
 };
 
@@ -14,6 +16,7 @@ const PAGE_BY_KEY = {
 export const navMenuItems = [
   { path: ROUTE_PATHS.BASE_MAIN, label: '메인' },
   { path: ROUTE_PATHS.REPORT_LIST, label: '보고서 목록' },
+  { path: ROUTE_PATHS.WIDGET_LIST, label: '위젯 목록' },
 ];
 
 /** `AppRoutes`용 — 메타(ROUTES) + 실제 컴포넌트 매핑 */
