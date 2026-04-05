@@ -22,7 +22,11 @@
           "page2": "5P · 제품 성과",
           "page3": "6P · 고객 분석",
           "page4": "7P · 전략 계획"
-        }
+        },
+        "top": 20,
+        "left": 20,
+        "width": 400,
+        "height": 300
       },
       "widgetData": null
     },
@@ -31,7 +35,11 @@
       "widgetAttr": {
         "pageKey": "page1",
         "chartNum": 1,
-        "tabLabel": "1P"
+        "tabLabel": "1P",
+        "top": 20,
+        "left": 450,
+        "width": 400,
+        "height": 300
       },
       "widgetData": {
         "layoutType": "grid2x3",
@@ -273,7 +281,11 @@
       "widgetAttr": {
         "pageKey": "page2",
         "chartNum": 2,
-        "tabLabel": "2P"
+        "tabLabel": "2P",
+        "top": 350,
+        "left": 20,
+        "width": 400,
+        "height": 300
       },
       "widgetData": {
         "layoutType": "grid2x3",
@@ -548,7 +560,11 @@
       "widgetAttr": {
         "pageKey": "page3",
         "chartNum": 3,
-        "tabLabel": "3P"
+        "tabLabel": "3P",
+        "top": 350,
+        "left": 450,
+        "width": 400,
+        "height": 300
       },
       "widgetData": {
         "layoutType": "grid2x3",
@@ -831,7 +847,11 @@
       "widgetType": "Data01Widget",
       "widgetAttr": {
         "pageKey": "page1",
-        "tabLabel": "4P · 경영 실적"
+        "tabLabel": "4P · 경영 실적",
+        "top": 20,
+        "left": 880,
+        "width": 400,
+        "height": 300
       },
       "widgetData": {
         "layoutType": "page1_stack",
@@ -886,7 +906,11 @@
       "widgetType": "Data01Widget",
       "widgetAttr": {
         "pageKey": "page2",
-        "tabLabel": "5P · 제품 성과"
+        "tabLabel": "5P · 제품 성과",
+        "top": 350,
+        "left": 880,
+        "width": 400,
+        "height": 300
       },
       "widgetData": {
         "layoutType": "page2_single",
@@ -943,7 +967,11 @@
       "widgetType": "Data01Widget",
       "widgetAttr": {
         "pageKey": "page3",
-        "tabLabel": "6P · 고객 분석"
+        "tabLabel": "6P · 고객 분석",
+        "top": 680,
+        "left": 20,
+        "width": 400,
+        "height": 300
       },
       "widgetData": {
         "layoutType": "page3_stack",
@@ -995,7 +1023,11 @@
       "widgetType": "Data01Widget",
       "widgetAttr": {
         "pageKey": "page4",
-        "tabLabel": "7P · 전략 계획"
+        "tabLabel": "7P · 전략 계획",
+        "top": 680,
+        "left": 450,
+        "width": 400,
+        "height": 300
       },
       "widgetData": {
         "layoutType": "page4_stack",
