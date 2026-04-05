@@ -2,8 +2,8 @@
 import { useRef, useState, useEffect } from 'react';
 import axios from 'axios';
 import CoverPage from '../CoverPage';
-import ChartPage from '../ChartPage';
-import { DataPage4, DataPage5, DataPage6, DataPage7 } from '../DataPage';
+import ChartPage from '../widget/Chart01Widget';
+import { DataPage4, DataPage5, DataPage6, DataPage7 } from '../widget/Data01Widget';
 import {
   downloadPdf, downloadPpt, downloadImage, downloadReadme,
   downloadAllImages, downloadAllPdf, downloadAllPpt,

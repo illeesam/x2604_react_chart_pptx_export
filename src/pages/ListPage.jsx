@@ -1,7 +1,7 @@
-// 보고서 목록 화면 — 보고서 행 표시, axios 데이터 로드, 다운로드 처리
+// 보고서 목록 페이지 — 보고서 행 표시, axios 데이터 로드, 다운로드 처리
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import PreviewModal from './modal/PreviewModal';
+import PreviewModal from '../components/modal/PreviewModal';
 import { downloadReadme, downloadAllPpt, downloadAllPdf, downloadAllPptx, downloadAllHtml, makeFilename } from '../utils/downloadHelpers';
 
 // 형식별 내려받기 버튼 배경색 매핑
@@ -67,7 +67,6 @@ export default function ListPage() {
     try {
       switch (type) {
         case 'readme': downloadReadme(reportData, makeFilename(src, reportId, 'README')); break;
-        // 이미지는 미리보기에서 페이지별 저장 안내
         case 'image':  alert('이미지 내려받기: 미리보기에서 원하는 페이지의 [이미지] 버튼을 사용하세요.'); break;
         case 'pdf':    await downloadAllPdf(reportData,  makeFilename(src, reportId, 'PDF'));  break;
         case 'ppt':    await downloadAllPpt(reportData,  makeFilename(src, reportId, 'PPT'));  break;
@@ -143,7 +142,7 @@ export default function ListPage() {
                     <option value="pptx">📋 PPTX</option>
                     <option value="html">🌐 HTML</option>
                   </select>
-                  {/* 내려받기 실행 버튼 — 처리 중 비활성 */}
+                  {/* 내려받기 실행 버튼 */}
                   <button
                     style={{
                       ...s.btnDownload,
@@ -162,7 +161,7 @@ export default function ListPage() {
         </table>
       </div>
 
-      {/* 하단 데이터 로드 방식 안내 카드 */}
+      {/* 하단 데이터 로드 방식 안내 */}
       <div style={s.infoCard}>
         <strong>데이터 로드 방식:</strong> 화면 로드 시 <code>/api/pptData.json</code> 을 axios 로 자동 로드합니다.
         미리보기는 로드된 데이터 기반으로 7페이지(차트 3 + 데이터 4)를 렌더링합니다.
@@ -188,22 +187,16 @@ function StatusBadge({ status }) {
 
 // 인라인 스타일 모음
 const s = {
-  container: { maxWidth: 1100, margin: '0 auto', padding: '32px 24px', fontFamily: "'Segoe UI', 'Malgun Gothic', sans-serif" }, // 목록 페이지 전체
-  pageHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }, // 제목·상태 배지 영역
-  titleRow: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }, // 제목 + 도움말 버튼 줄
-  pageTitle: { margin: 0, fontSize: 28, fontWeight: 800, color: '#1e293b' }, // 페이지 메인 제목
+  container: { maxWidth: 1100, margin: '0 auto', padding: '32px 24px', fontFamily: "'Segoe UI', 'Malgun Gothic', sans-serif" },
+  pageHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 },
+  titleRow: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' },
+  pageTitle: { margin: 0, fontSize: 28, fontWeight: 800, color: '#1e293b' },
   btnHelp: {
-    padding: '6px 14px',
-    borderRadius: 8,
-    border: '1px solid #cbd5e1',
-    background: '#fff',
-    color: '#475569',
-    fontSize: 13,
-    fontWeight: 600,
-    cursor: 'pointer',
-    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+    padding: '6px 14px', borderRadius: 8, border: '1px solid #cbd5e1',
+    background: '#fff', color: '#475569', fontSize: 13, fontWeight: 600,
+    cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
   },
-  pageSub: { margin: '4px 0 0', color: '#64748b', fontSize: 14 }, // 페이지 부제/설명
+  pageSub: { margin: '4px 0 0', color: '#64748b', fontSize: 14 },
   loadingBadge: { background: '#dbeafe', color: '#1d4ed8', padding: '6px 14px', borderRadius: 6, fontSize: 13, fontWeight: 600 },
   errorBadge: { background: '#fee2e2', color: '#b91c1c', padding: '6px 14px', borderRadius: 6, fontSize: 13, fontWeight: 600 },
   successBadge: { background: '#dcfce7', color: '#15803d', padding: '6px 14px', borderRadius: 6, fontSize: 13, fontWeight: 600 },
