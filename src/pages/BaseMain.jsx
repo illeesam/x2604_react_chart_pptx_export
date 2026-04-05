@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import axiosLib from '../utils/axiosLib';
 import { ROUTE_PATHS } from '../routes/routePaths';
 import { API_JSON } from '../utils/apiConfig';
 
@@ -10,7 +10,7 @@ export default function BaseMain() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    axios
+    axiosLib
       .get(API_JSON.baseMainData)
       .then((res) => setPayload(res.data))
       .catch((err) => setError(err.message));

@@ -2,7 +2,7 @@
  * 보고서 목록 — `reportListData.json`(표·페이지 메타) + `previewModalData.json`(목록에서 내려받기용 덱)
  */
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosLib from '../utils/axiosLib';
 import PreviewModal from '../components/modal/PreviewModal';
 import { downloadReadme, downloadAllPpt, downloadAllPdf, downloadAllPptx, downloadAllHtml, makeFilename } from '../utils/downloadHelpers';
 import { API_JSON } from '../utils/apiConfig';
@@ -41,7 +41,7 @@ export default function ReportList() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    Promise.all([axios.get(API_JSON.reportListData), axios.get(API_JSON.previewModalData)])
+    Promise.all([axiosLib.get(API_JSON.reportListData), axiosLib.get(API_JSON.previewModalData)])
       .then(([listRes, deckRes]) => {
         if (cancelled) return;
         setListPayload(listRes.data);

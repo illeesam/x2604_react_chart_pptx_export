@@ -2,7 +2,7 @@
  * 미리보기 모달 — 마운트 시 `previewModalData.json` axios 로드, 페이지 전환·보내기
  */
 import { useRef, useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosLib from '../../utils/axiosLib';
 import {
   downloadPdf, downloadPpt, downloadImage, downloadReadme,
   downloadAllImages, downloadAllPdf, downloadAllPpt,
@@ -35,7 +35,7 @@ export default function PreviewModal({ onClose }) {
     setLoadError(null);
     setData(null);
     setCurrentPage(0);
-    axios
+    axiosLib
       .get(API_JSON.previewModalData)
       .then((res) => {
         if (!cancelled) setData(res.data);
