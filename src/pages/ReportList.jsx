@@ -23,7 +23,7 @@ const REPORT_LIST = [
 ];
 
 // 보고서 목록 페이지 — 테이블·미리보기·일괄 다운로드 진입
-export default function ListPage() {
+export default function ReportList() {
   // 보고서 본문 데이터 (axios 로드 결과)
   const [reportData, setReportData] = useState(null);
   // 초기 데이터 로딩 상태

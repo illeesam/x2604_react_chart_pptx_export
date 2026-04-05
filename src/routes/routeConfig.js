@@ -1,18 +1,18 @@
-import MainPage from '../pages/MainPage';
-import ListPage from '../pages/ListPage';
-import LoginPage from '../pages/LoginPage';
+import BaseMain from '../pages/BaseMain';
+import ReportList from '../pages/ReportList';
+import BaseLogin from '../pages/BaseLogin';
 import { ROUTES, ROUTE_PATHS } from './routePaths';
 
 const PAGE_BY_KEY = {
-  MAIN: MainPage,
-  REPORTS: ListPage,
-  LOGIN: LoginPage,
+  BASE_MAIN: BaseMain,
+  REPORT_LIST: ReportList,
+  BASE_LOGIN: BaseLogin,
 };
 
 /** 상단 메뉴에 노출할 항목 (메인 | 보고서 목록) */
 export const navMenuItems = [
-  { path: ROUTE_PATHS.MAIN, label: '메인' },
-  { path: ROUTE_PATHS.REPORTS, label: '보고서 목록' },
+  { path: ROUTE_PATHS.BASE_MAIN, label: '메인' },
+  { path: ROUTE_PATHS.REPORT_LIST, label: '보고서 목록' },
 ];
 
 /**

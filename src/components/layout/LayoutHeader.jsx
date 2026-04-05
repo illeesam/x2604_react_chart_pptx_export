@@ -11,7 +11,7 @@ export default function LayoutHeader() {
     <nav style={navStyle}>
       <div style={navInner}>
         <div style={navLeft}>
-          <Link to={ROUTE_PATHS.MAIN} style={navLogoLink}>
+          <Link to={ROUTE_PATHS.BASE_MAIN} style={navLogoLink}>
             <span style={navLogo}>📊 ReportHub</span>
           </Link>
           <div style={navMenu}>
@@ -43,7 +43,7 @@ export default function LayoutHeader() {
             </div>
           ) : (
             <Link
-              to={ROUTE_PATHS.LOGIN}
+              to={ROUTE_PATHS.BASE_LOGIN}
               style={loginIconBtn}
               title="로그인"
               aria-label="로그인"

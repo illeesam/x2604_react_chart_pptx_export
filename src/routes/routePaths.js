@@ -9,36 +9,36 @@
  */
 export const ROUTES = [
   {
-    key: 'MAIN',
-    path: '/main',
+    key: 'BASE_MAIN',
+    path: '/baseMain',
     title: '메인',
     requiresAuth: false,
     showLayoutBottom: true,
   },
   {
-    key: 'REPORTS',
-    path: '/reports',
+    key: 'REPORT_LIST',
+    path: '/reportList',
     title: '보고서 목록',
     requiresAuth: true,
     showLayoutBottom: false,
   },
   {
-    key: 'LOGIN',
-    path: '/login',
+    key: 'BASE_LOGIN',
+    path: '/baseLogin',
     title: '로그인',
     requiresAuth: false,
     showLayoutBottom: true,
   },
 ];
 
-/** 링크·Navigate 용 path 상수 ({ ROOT, MAIN, REPORTS, LOGIN }) */
+/** 링크·Navigate 용 path 상수 ({ ROOT, BASE_MAIN, REPORT_LIST, BASE_LOGIN }) */
 export const ROUTE_PATHS = {
   ROOT: '/',
   ...Object.fromEntries(ROUTES.map((r) => [r.key, r.path])),
 };
 
 /** 접속 시 기본으로 보낼 경로 */
-export const DEFAULT_REDIRECT = ROUTE_PATHS.MAIN;
+export const DEFAULT_REDIRECT = ROUTE_PATHS.BASE_MAIN;
 
 function normalizePathname(pathname) {
   if (!pathname) return '';

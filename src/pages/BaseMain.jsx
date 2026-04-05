@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { ROUTE_PATHS } from '../routes/routePaths';
 
 // 메인(홈) — 안내 카드와 보고서 목록으로 이동
-export default function MainPage() {
+export default function BaseMain() {
   return (
     <div style={s.wrap}>
       <div style={s.hero}>
@@ -13,7 +13,7 @@ export default function MainPage() {
       </div>
 
       <div style={s.cards}>
-        <Link to={ROUTE_PATHS.REPORTS} style={s.card}>
+        <Link to={ROUTE_PATHS.REPORT_LIST} style={s.card}>
           <span style={s.cardIcon}>📋</span>
           <span style={s.cardTitle}>보고서 목록</span>
           <span style={s.cardDesc}>보고서 미리보기 및 다운로드</span>

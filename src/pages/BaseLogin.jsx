@@ -8,7 +8,7 @@ import {
 import { ROUTE_PATHS } from '../routes/routePaths';
 
 // 로그인 — 기본 계정(demo / demo1234)으로 데모 인증
-export default function LoginPage() {
+export default function BaseLogin() {
   const { user, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -19,7 +19,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user) {
-      navigate(fromPath || ROUTE_PATHS.MAIN, { replace: true });
+      navigate(fromPath || ROUTE_PATHS.BASE_MAIN, { replace: true });
     }
   }, [user, navigate, fromPath]);
 
@@ -27,7 +27,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     if (login(id.trim(), password)) {
-      navigate(fromPath || ROUTE_PATHS.MAIN, { replace: true });
+      navigate(fromPath || ROUTE_PATHS.BASE_MAIN, { replace: true });
       return;
     }
     setError('아이디 또는 비밀번호가 올바르지 않습니다.');
@@ -68,7 +68,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <Link to={ROUTE_PATHS.MAIN} style={s.back}>
+        <Link to={ROUTE_PATHS.BASE_MAIN} style={s.back}>
           ← 메인으로
         </Link>
       </div>

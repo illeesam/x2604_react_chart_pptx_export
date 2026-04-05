@@ -10,7 +10,7 @@ export default function PrivateRoute({ children }) {
   if (!user) {
     return (
       <Navigate
-        to={ROUTE_PATHS.LOGIN}
+        to={ROUTE_PATHS.BASE_LOGIN}
         state={{ from: location }}
         replace
       />
