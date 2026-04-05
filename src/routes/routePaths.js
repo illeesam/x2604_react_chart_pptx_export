@@ -7,6 +7,8 @@
  *
  * 새 페이지: 아래 ROUTES 에 객체 한 줄 추가 후 routeConfig 의 PAGE_BY_KEY 에 컴포넌트 연결
  */
+
+// ── 라우트 메타 (단일 출처) ──
 export const ROUTES = [
   {
     key: 'BASE_MAIN',
@@ -31,15 +33,15 @@ export const ROUTES = [
   },
 ];
 
-/** 링크·Navigate 용 path 상수 ({ ROOT, BASE_MAIN, REPORT_LIST, BASE_LOGIN }) */
+// ── 코드에서 쓰는 path 상수 (ROUTES에서 파생) ──
 export const ROUTE_PATHS = {
   ROOT: '/',
   ...Object.fromEntries(ROUTES.map((r) => [r.key, r.path])),
 };
 
-/** 접속 시 기본으로 보낼 경로 */
 export const DEFAULT_REDIRECT = ROUTE_PATHS.BASE_MAIN;
 
+/** trailing slash 제거 등 경로 정규화 */
 function normalizePathname(pathname) {
   if (!pathname) return '';
   if (pathname !== '/' && pathname.endsWith('/')) {
@@ -48,14 +50,16 @@ function normalizePathname(pathname) {
   return pathname;
 }
 
-/** 현재 URL 기준 LayoutBottom 표시 여부 */
+// ── LayoutMain 에서 사용하는 헬퍼 ──
+
+/** 등록된 path에 대응하는 `showLayoutBottom` */
 export function shouldShowLayoutBottom(pathname) {
   const p = normalizePathname(pathname);
   const row = ROUTES.find((r) => r.path === p);
   return row?.showLayoutBottom ?? false;
 }
 
-/** 현재 URL 기준 인증 필요 여부 (등록되지 않은 경로는 false) */
+/** 등록된 path에 대응하는 `requiresAuth` */
 export function requiresAuthForPath(pathname) {
   const p = normalizePathname(pathname);
   const row = ROUTES.find((r) => r.path === p);

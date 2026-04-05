@@ -1,3 +1,6 @@
+/**
+ * 내려받기 — README·이미지/PDF/PPT/HTML·전체 일괄·pptxgen 네이티브 PPTX
+ */
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import pptxgen from 'pptxgenjs';
@@ -378,6 +381,7 @@ const CHART_TYPE_MAP = {
   mixed:         { type: 'bar' },
 };
 
+/** Chart.js 형식 datasets → pptxgen `addChart`용 시리즈 배열 */
 function buildPptxChartData(chartData) {
   const isBubble  = chartData.type === 'bubble';
   const isScatter = chartData.type === 'scatter';
@@ -407,6 +411,7 @@ function buildPptxChartData(chartData) {
   }));
 }
 
+/** 단일 슬라이드에 차트 1개 배치 (타입 매핑 실패 시 bar 폴백) */
 function addChartToSlide(pptx, slide, chartData, x, y, w, h) {
   const mapping = CHART_TYPE_MAP[chartData.type] || { type: 'bar' };
   const seriesData = buildPptxChartData(chartData);
@@ -433,7 +438,7 @@ function addChartToSlide(pptx, slide, chartData, x, y, w, h) {
   }
 }
 
-// data 기준으로 표지·차트1~3·데이터4~7 슬라이드를 pptx에 추가
+/** `data` 전체를 네이티브 슬라이드 집합으로 구성 (표지·차트·데이터 페이지) */
 function buildPptxSlides(pptx, data) {
   const HBG = '1E293B';
   const HFG = 'FFFFFF';

@@ -1,7 +1,7 @@
-/** 정적 API JSON 경로 (public/api/ → 개발 서버에서 /api/...) */
+/** 정적 JSON URL — `public/api/*.json` 이 빌드 후 `/api/...` 로 서빙 */
 export const API_JSON = {
-  baseMainData: '/api/baseMainData.json',
-  reportListData: '/api/reportListData.json',
-  previewModalData: '/api/previewModalData.json',
-  baseLoginData: '/api/baseLoginData.json',
+  baseMainData: '/api/baseMainData.json', // 홈 히어로·링크
+  reportListData: '/api/reportListData.json', // 보고서 목록 표·메타
+  previewModalData: '/api/previewModalData.json', // 미리보기·덱 내려받기
+  baseLoginData: '/api/baseLoginData.json', // 로그인 사용자·폼 힌트
 };

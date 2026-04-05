@@ -1,10 +1,13 @@
-// 보고서 목록 — reportListData.json(표·페이지 메타) + previewModalData.json(슬라이드 덱)
+/**
+ * 보고서 목록 — `reportListData.json`(표·페이지 메타) + `previewModalData.json`(목록에서 내려받기용 덱)
+ */
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import PreviewModal from '../components/modal/PreviewModal';
 import { downloadReadme, downloadAllPpt, downloadAllPdf, downloadAllPptx, downloadAllHtml, makeFilename } from '../utils/downloadHelpers';
 import { API_JSON } from '../utils/apiConfig';
 
+// ── 내려받기 버튼 배경색 (선택 형식별) ──
 const TYPE_COLORS = {
   readme: '#6366f1',
   image: '#0ea5e9',
@@ -14,6 +17,7 @@ const TYPE_COLORS = {
   html: '#0891b2',
 };
 
+// ── 행 상태 뱃지 Tailwind 배경 ──
 const STATUS_BADGE_CLASS = {
   최종: 'bg-emerald-500',
   검토중: 'bg-amber-500',
@@ -21,17 +25,18 @@ const STATUS_BADGE_CLASS = {
 };
 
 export default function ReportList() {
-  const [listPayload, setListPayload] = useState(null);
-  const [reportData, setReportData] = useState(null);
+  const [listPayload, setListPayload] = useState(null); // reportListData
+  const [reportData, setReportData] = useState(null); // previewModalData (행 내려받기)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showPreview, setShowPreview] = useState(false);
-  const [downloading, setDownloading] = useState(null);
-  const [selectedType, setSelectedType] = useState({});
+  const [showPreview, setShowPreview] = useState(false); // 미리보기 모달 표시
+  const [downloading, setDownloading] = useState(null); // 처리 중인 report.id
+  const [selectedType, setSelectedType] = useState({}); // reportId → readme|pdf|…
 
-  const reports = listPayload?.reports ?? [];
-  const pageMeta = listPayload?.page;
+  const reports = listPayload?.reports ?? []; // 테이블 행
+  const pageMeta = listPayload?.page; // 제목·부제 등
 
+  // ── 초기 로드: 목록 JSON + 덱 JSON 병렬 ──
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -55,14 +60,16 @@ export default function ReportList() {
 
   const handlePreview = () => setShowPreview(true);
 
+  /** 정적 도움말 HTML 새 창 */
   const openHelpPopup = () => {
     const base = (process.env.PUBLIC_URL || '').replace(/\/$/, '');
     const url = `${base}/help/list-help.html`;
     window.open(url, 'ReportHubListHelp', 'width=1180,height=960,scrollbars=yes,resizable=yes');
   };
 
-  const src = '보고서목록';
+  const src = '보고서목록'; // makeFilename 접두
 
+  /** 행별 선택 형식으로 전체 덱 내려받기 */
   const handleDownload = async (reportId) => {
     const type = selectedType[reportId] || 'pdf';
     if (!reportData) return;
@@ -84,6 +91,7 @@ export default function ReportList() {
 
   return (
     <div className="mx-auto max-w-[1100px] px-6 py-8 font-sans">
+      {/* ── 페이지 헤더 · 로드 상태 배지 ── */}
       <div className="mb-6 flex items-start justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-3">
@@ -120,6 +128,7 @@ export default function ReportList() {
         )}
       </div>
 
+      {/* ── 보고서 테이블 ── */}
       <div className="mb-4 overflow-hidden rounded-xl bg-white shadow-sm">
         <table className="w-full border-collapse">
           <thead>
@@ -193,6 +202,7 @@ export default function ReportList() {
         </table>
       </div>
 
+      {/* ── 데이터 출처 안내 ── */}
       <div className="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-[13px] text-sky-700">
         <strong>데이터 로드:</strong> 화면 로드 시{' '}
         <code className="rounded bg-sky-100 px-1">{API_JSON.reportListData}</code> (목록·표) 와{' '}
@@ -201,11 +211,13 @@ export default function ReportList() {
         <code className="rounded bg-sky-100 px-1">{API_JSON.previewModalData}</code> 을 다시 조회합니다.
       </div>
 
+      {/* ── 미리보기 (모달 내부에서 덱 JSON 재조회) ── */}
       {showPreview && <PreviewModal onClose={() => setShowPreview(false)} />}
     </div>
   );
 }
 
+/** 테이블 상태 열 뱃지 */
 function StatusBadge({ status }) {
   const bg = STATUS_BADGE_CLASS[status] || 'bg-slate-400';
   return (

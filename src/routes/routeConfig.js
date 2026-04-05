@@ -3,21 +3,20 @@ import ReportList from '../pages/ReportList';
 import BaseLogin from '../pages/BaseLogin';
 import { ROUTES, ROUTE_PATHS } from './routePaths';
 
+/** ROUTES[].key → 페이지 컴포넌트 (새 페이지 시 여기에 한 줄 추가) */
 const PAGE_BY_KEY = {
   BASE_MAIN: BaseMain,
   REPORT_LIST: ReportList,
   BASE_LOGIN: BaseLogin,
 };
 
-/** 상단 메뉴에 노출할 항목 (메인 | 보고서 목록) */
+// ── LayoutHeader 네비 항목 ──
 export const navMenuItems = [
   { path: ROUTE_PATHS.BASE_MAIN, label: '메인' },
   { path: ROUTE_PATHS.REPORT_LIST, label: '보고서 목록' },
 ];
 
-/**
- * 앱 라우트 목록 — ROUTES 메타(path, requiresAuth, showLayoutBottom, title) + 컴포넌트
- */
+/** `AppRoutes`용 — 메타(ROUTES) + 실제 컴포넌트 매핑 */
 export const appRoutes = ROUTES.map((r) => ({
   path: r.path,
   Component: PAGE_BY_KEY[r.key],

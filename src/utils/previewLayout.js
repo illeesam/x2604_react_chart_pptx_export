@@ -1,5 +1,8 @@
-// reportDeck( charts + dataPages + previewNav 등 ) 기준 미리보기·캡처 슬롯 순서
+/**
+ * 미리보기·캡처 슬롯 순서 — `charts` / `dataPages` 키 + `previewNav` 라벨
+ */
 
+/** page1, page2 … 숫자 순 정렬 */
 function sortPageKeys(keys) {
   return [...keys].sort((a, b) => {
     const na = +(String(a).match(/\d+/) || [0])[0];
@@ -8,6 +11,7 @@ function sortPageKeys(keys) {
   });
 }
 
+/** 표지 → 차트 페이지들 → 데이터 페이지들 순 `slots` 배열 생성 */
 export function buildPreviewSlots(data) {
   const chartKeys = sortPageKeys(Object.keys(data?.charts || {}));
   const dataKeys = sortPageKeys(Object.keys(data?.dataPages || {}));
@@ -17,6 +21,7 @@ export function buildPreviewSlots(data) {
   return { slots, chartKeys, dataKeys };
 }
 
+/** 슬롯 개수 (= 미리보기·캡처 총 페이지 수) */
 export function getPreviewPageCount(data) {
   return buildPreviewSlots(data).slots.length;
 }

@@ -1,3 +1,6 @@
+/**
+ * 엔트리 — 전역 스타일 로드 후 `#root`에 React 마운트
+ */
 import './index.css';
 import React from 'react';
 import { createRoot } from 'react-dom/client';

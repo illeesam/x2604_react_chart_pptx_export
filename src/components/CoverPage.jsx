@@ -1,13 +1,15 @@
-// 표지(page 0) — KPI·분기 실적·제품 비중·목표·보고서 구성 안내
+/** 미리보기 0번 슬롯 — KPI·분기 실적·제품 비중·목표·보고서 구성 요약 */
 export default function CoverPage({ data }) {
   if (!data) return null;
 
+  // ── dataPages 단위 참조 (JSON 키와 동일) ──
   const p4 = data.dataPages.page4;
   const p5 = data.dataPages.page5;
   const p6 = data.dataPages.page6;
   const p7 = data.dataPages.page7;
   const summary = p4.summary;
 
+  // ── 상단 KPI 카드 데이터 ──
   const kpis = [
     { label: '총 매출', value: `₩${summary.totalRevenue}`, color: '#3b82f6', bg: '#eff6ff' },
     { label: '영업이익', value: `₩${summary.operatingProfit}`, color: '#10b981', bg: '#f0fdf4' },
@@ -19,6 +21,7 @@ export default function CoverPage({ data }) {
     { label: 'CSAT', value: `${p6.csat} / 5.0`, color: '#14b8a6', bg: '#f0fdfa' },
   ];
 
+  // ── 보고서 구성 안내 (P1~P7) ──
   const pageList = [
     { num: 'P1', label: '월별 매출 추이 / 분기별 비용 / 매출 비중 / 고객 세그먼트' },
     { num: 'P2', label: 'KPI 달성률 / 지역 분포 / 제품 포지셔닝 / 광고비 상관관계' },
@@ -31,6 +34,7 @@ export default function CoverPage({ data }) {
 
   return (
     <div className="box-border w-full bg-white px-6 py-5">
+      {/* ── 히어로(제목·생성일) ── */}
       <div className="mb-4 rounded-[10px] bg-gradient-to-br from-slate-800 to-slate-700 px-6 py-5 text-white">
         <div className="mb-2 inline-block rounded bg-blue-500 px-2.5 py-1 text-[11px] font-bold">
           EXECUTIVE SUMMARY
@@ -39,6 +43,7 @@ export default function CoverPage({ data }) {
         <div className="text-xs text-slate-400">생성일: {data.generatedAt}</div>
       </div>
 
+      {/* ── KPI 그리드 ── */}
       <div className="mb-3.5">
         <div className="mb-2 text-[13px] font-bold text-slate-600">핵심 경영 지표</div>
         <div className="grid grid-cols-4 gap-2.5">
@@ -55,6 +60,7 @@ export default function CoverPage({ data }) {
         </div>
       </div>
 
+      {/* ── 분기 실적 / 제품 비중 ── */}
       <div className="mb-3.5 grid grid-cols-2 gap-3.5">
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
           <div className="mb-2 border-b border-slate-200 pb-1.5 text-xs font-bold text-slate-700">
@@ -118,6 +124,7 @@ export default function CoverPage({ data }) {
         </div>
       </div>
 
+      {/* ── 전략 목표 / 보고서 목차 ── */}
       <div className="grid grid-cols-2 gap-3.5">
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
           <div className="mb-2 border-b border-slate-200 pb-1.5 text-xs font-bold text-slate-700">

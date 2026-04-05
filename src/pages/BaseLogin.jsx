@@ -3,22 +3,24 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ROUTE_PATHS } from '../routes/routePaths';
 
-// 로그인 — baseLoginData.json 사용자 목록으로 인증 (실패 시 안내)
+/** 로그인 페이지 — `baseLoginData.json` 사용자로 검증, 성공 시 이전 경로 또는 메인으로 이동 */
 export default function BaseLogin() {
   const { user, login, authReady, formHints } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const fromPath = location.state?.from?.pathname;
+  const fromPath = location.state?.from?.pathname; // PrivateRoute 가 넘긴 redirect 출발지
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(''); // 제출 실패 메시지
 
+  // ── 이미 로그인된 경우 리다이렉트 ──
   useEffect(() => {
     if (user) {
       navigate(fromPath || ROUTE_PATHS.BASE_MAIN, { replace: true });
     }
   }, [user, navigate, fromPath]);
 
+  // ── 서버 힌트로 폼 기본값 채움 ──
   useEffect(() => {
     if (authReady) {
       setId(formHints.defaultId);
@@ -26,6 +28,7 @@ export default function BaseLogin() {
     }
   }, [authReady, formHints.defaultId, formHints.defaultPassword]);
 
+  /** 폼 제출 — `login()` 성공 시 navigate */
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
@@ -39,6 +42,7 @@ export default function BaseLogin() {
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center p-6">
+      {/* ── 로그인 카드 ── */}
       <div className="w-full max-w-[400px] rounded-xl border border-slate-200 bg-white p-7 pb-5 shadow-lg">
         <h1 className="mb-2 text-[22px] font-extrabold text-slate-800">로그인</h1>
         <p className="mb-5 text-[13px] text-slate-500">

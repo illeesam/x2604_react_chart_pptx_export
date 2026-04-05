@@ -4,9 +4,9 @@ import axios from 'axios';
 import { ROUTE_PATHS } from '../routes/routePaths';
 import { API_JSON } from '../utils/apiConfig';
 
-// 메인(홈) — baseMainData.json 기반 안내·링크 카드
+/** 홈 — `baseMainData.json` 히어로 문구·진입 링크 카드 */
 export default function BaseMain() {
-  const [payload, setPayload] = useState(null);
+  const [payload, setPayload] = useState(null); // baseMainData 전체
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -16,11 +16,12 @@ export default function BaseMain() {
       .catch((err) => setError(err.message));
   }, []);
 
-  const hero = payload?.hero;
-  const links = Array.isArray(payload?.links) ? payload.links : [];
+  const hero = payload?.hero; // title, description
+  const links = Array.isArray(payload?.links) ? payload.links : []; // 카드 목록
 
   return (
     <div className="mx-auto max-w-[1100px] px-6 py-8">
+      {/* ── 히어로 ── */}
       <div className="mb-7">
         <h1 className="m-0 text-[26px] font-extrabold text-slate-800">
           {hero?.title ?? 'ReportHub'}
@@ -30,6 +31,7 @@ export default function BaseMain() {
         </p>
       </div>
 
+      {/* ── 진입 링크 카드 ── */}
       <div className="flex flex-wrap gap-4">
         {links.map((item) => {
           const to =

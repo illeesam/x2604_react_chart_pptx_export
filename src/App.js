@@ -1,4 +1,6 @@
-// 앱 루트 — BrowserRouter + 인증 + 레이아웃(LayoutMain) + 라우트
+/**
+ * 앱 루트 — Router → Auth → 공통 레이아웃 → 라우트 트리
+ */
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import LayoutMain from './components/layout/LayoutMain';

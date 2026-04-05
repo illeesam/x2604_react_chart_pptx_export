@@ -8,6 +8,7 @@ import { buildPreviewSlots, getPreviewPageCount } from './previewLayout';
 
 export { getPreviewPageCount } from './previewLayout';
 
+/** dataPages 키 → React 데이터 페이지 위젯 */
 const DATA_PAGE_BY_KEY = {
   page4: DataPage4,
   page5: DataPage5,
@@ -15,6 +16,7 @@ const DATA_PAGE_BY_KEY = {
   page7: DataPage7,
 };
 
+/** 슬롯 인덱스에 해당하는 단일 페이지 React 엘리먼트 (미리보기·오프스크린 캡처 공용) */
 export function getPageElement(data, pageNum) {
   const { slots } = buildPreviewSlots(data);
   const slot = slots[pageNum];
@@ -43,6 +45,7 @@ export async function captureAllPages(data, onProgress) {
   const { chartKeys } = buildPreviewSlots(data);
   const nChart = chartKeys.length;
 
+  // ── 화면 밖 캡처용 컨테이너 ──
   const container = document.createElement('div');
   container.style.cssText = [
     'position:fixed', 'left:-9999px', 'top:0',
@@ -53,6 +56,7 @@ export async function captureAllPages(data, onProgress) {
 
   const results = [];
 
+  // ── 슬롯마다 마운트 → 대기 → html2canvas → 언마운트 ──
   for (let p = 0; p < total; p++) {
     if (onProgress) onProgress(p + 1, total);
 

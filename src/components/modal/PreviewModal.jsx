@@ -1,4 +1,6 @@
-// 미리보기 모달 — 열릴 때마다 previewModalData.json axios 로드
+/**
+ * 미리보기 모달 — 마운트 시 `previewModalData.json` axios 로드, 페이지 전환·보내기
+ */
 import { useRef, useState, useEffect } from 'react';
 import axios from 'axios';
 import {
@@ -17,14 +19,16 @@ import {
 } from '../../utils/previewLayout';
 
 export default function PreviewModal({ onClose }) {
-  const [data, setData] = useState(null);
+  // ── 서버(정적 JSON) 데이터 · UI 상태 ──
+  const [data, setData] = useState(null); // previewModalData 전체
   const [loadingData, setLoadingData] = useState(true);
   const [loadError, setLoadError] = useState(null);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [downloading, setDownloading] = useState(null);
-  const [progress, setProgress] = useState({ current: 0, total: 1 });
-  const contentRef = useRef(null);
+  const [currentPage, setCurrentPage] = useState(0); // 슬롯 인덱스 0..N-1
+  const [downloading, setDownloading] = useState(null); // 진행 중인 버튼 키 (readme, pdf, …)
+  const [progress, setProgress] = useState({ current: 0, total: 1 }); // 전체보내기 진행률
+  const contentRef = useRef(null); // 캡처 대상 DOM (현재 슬롯)
 
+  // ── 모달 마운트 = 열림: 매번 JSON 재조회 ──
   useEffect(() => {
     let cancelled = false;
     setLoadingData(true);
@@ -47,9 +51,10 @@ export default function PreviewModal({ onClose }) {
     };
   }, []);
 
-  const totalPages = data ? getPreviewPageCount(data) : 0;
-  const contentPages = data ? getContentPageCount(data) : 0;
+  const totalPages = data ? getPreviewPageCount(data) : 0; // 표지+차트+데이터 슬롯 수
+  const contentPages = data ? getContentPageCount(data) : 0; // 표지 제외 (다운로드 UI 문구용)
 
+  // ── 로딩 오버레이 ──
   if (loadingData) {
     return (
       <div
@@ -78,6 +83,7 @@ export default function PreviewModal({ onClose }) {
     );
   }
 
+  // ── 로드 실패 ──
   if (loadError || !data) {
     return (
       <div
@@ -100,17 +106,20 @@ export default function PreviewModal({ onClose }) {
     );
   }
 
+  // ── 페이지 이동 · 배치 다운로드 진행 콜백 ──
   const goTo = (p) => setCurrentPage(Math.max(0, Math.min(totalPages - 1, p)));
   const onProg = (cur, total) => setProgress({ current: cur, total });
 
+  /** 단일 다운로드 작업: 키로 로딩 표시, 완료 시 해제 */
   const run = async (key, fn) => {
     setDownloading(key);
     setProgress({ current: 0, total: Math.max(totalPages, 1) });
     try { await fn(); } finally { setDownloading(null); }
   };
 
-  const src = '미리보기';
+  const src = '미리보기'; // 파일명 접두 (downloadHelpers.makeFilename)
 
+  // ── 현재 페이지 단건보내기 핸들러 ──
   const handleReadme = () => run('readme', () => downloadReadme(data, makeFilename(src, currentPage, 'README')));
   const handleImage = () => run('image', () => downloadImage(contentRef, makeFilename(src, currentPage, '이미지')));
   const handlePdf = () => run('pdf', () => downloadPdf(contentRef, makeFilename(src, currentPage, 'PDF')));
@@ -124,8 +133,9 @@ export default function PreviewModal({ onClose }) {
   const handleAllHtml = () => run('allHtml', () => downloadAllHtml(data, makeFilename(src, '전체', '전체HTML'), onProg));
 
   const isBusy = !!downloading;
-  const isAll = ['allImg', 'allPdf', 'allPpt', 'allPptx', 'allHtml'].includes(downloading);
+  const isAll = ['allImg', 'allPdf', 'allPpt', 'allPptx', 'allHtml'].includes(downloading); // 전체 N페이지 작업 여부
 
+  // ── 본문 UI ──
   return (
     <div
       className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-5"
@@ -133,6 +143,7 @@ export default function PreviewModal({ onClose }) {
     >
       <div className="flex h-[92vh] w-full max-w-[920px] flex-col rounded-xl bg-white shadow-2xl">
 
+        {/* ── 타이틀 바 ── */}
         <div className="flex items-center justify-between rounded-t-xl bg-gradient-to-br from-slate-800 to-slate-700 px-5 py-3">
           <div>
             <div className="text-[15px] font-bold text-white">{data.reportTitle}</div>
@@ -150,6 +161,7 @@ export default function PreviewModal({ onClose }) {
           </button>
         </div>
 
+        {/* ── 도구 모음: 현재 페이지 / 전체 페이지 ── */}
         <div className="flex flex-wrap items-center gap-0 border-b border-slate-200 bg-slate-100 px-3.5 py-2">
           <div className="flex flex-wrap items-center gap-1 py-0.5">
             <span className="mr-1 max-w-[200px] truncate whitespace-nowrap rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-bold text-slate-500" title={getTabLabelForPage(data, currentPage)}>
@@ -177,6 +189,7 @@ export default function PreviewModal({ onClose }) {
           </div>
         </div>
 
+        {/* ── 전체보내기 진행 바 ── */}
         {isAll && (
           <div className="border-b border-blue-200 bg-blue-50 px-4 py-1.5">
             <span className="text-xs font-semibold text-blue-700">
@@ -192,6 +205,7 @@ export default function PreviewModal({ onClose }) {
           </div>
         )}
 
+        {/* ── 슬롯 탭 (표지·차트·데이터) ── */}
         <div className="flex gap-1 overflow-x-auto border-b border-slate-200 bg-slate-50 px-3.5 py-2">
           {Array.from({ length: totalPages }, (_, i) => i).map((p) => (
             <button
@@ -210,10 +224,12 @@ export default function PreviewModal({ onClose }) {
           ))}
         </div>
 
+        {/* ── 현재 슬롯 미리보기 (html2canvas 대상) ── */}
         <div className="min-h-0 flex-1 overflow-y-auto p-0" ref={contentRef}>
           {getPageElement(data, currentPage)}
         </div>
 
+        {/* ── 이전/다음 · 도트 네비 ── */}
         <div className="flex items-center justify-between rounded-b-xl border-t border-slate-200 bg-slate-50 px-5 py-2.5">
           <button
             type="button"
@@ -250,6 +266,7 @@ export default function PreviewModal({ onClose }) {
   );
 }
 
+/** 도구 모음 작은 버튼 — `k`와 `downloading` 일치 시 스피너 */
 function Btn({ label, icon, k, downloading, onClick, color }) {
   const loading = downloading === k;
   const disabled = !!downloading;

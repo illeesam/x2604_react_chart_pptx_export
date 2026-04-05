@@ -2,11 +2,12 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ROUTE_PATHS } from './routePaths';
 
-/** 로그인 시에만 children 렌더, 미로그인이면 로그인으로 이동(state.from에 이전 경로 저장) */
+/** 인증 가드 — `user` 없으면 로그인으로, `state.from`에 되돌아갈 경로 저장 */
 export default function PrivateRoute({ children }) {
   const { user } = useAuth();
   const location = useLocation();
 
+  // ── 미로그인 → 로그인 페이지 ──
   if (!user) {
     return (
       <Navigate

@@ -3,13 +3,14 @@ import { useAuth } from '../../context/AuthContext';
 import { ROUTE_PATHS } from '../../routes/routePaths';
 import { navMenuItems } from '../../routes/routeConfig';
 
-/** 상단 고정 헤더 — 로고, 메인 메뉴, 로그인/사용자 영역 */
+/** 상단 고정 헤더 — 브랜드, `navMenuItems` 네비, 로그인/프로필·로그아웃 */
 export default function LayoutHeader() {
   const { user, logout } = useAuth();
 
   return (
     <nav className="sticky top-0 z-[100] bg-gradient-to-br from-slate-800 to-slate-700 shadow-md">
       <div className="mx-auto flex max-w-[1100px] items-center justify-between gap-4 px-6 py-3">
+        {/* ── 로고 + 메인 메뉴 ── */}
         <div className="flex min-w-0 flex-wrap items-center gap-7">
           <Link
             to={ROUTE_PATHS.BASE_MAIN}
@@ -39,6 +40,7 @@ export default function LayoutHeader() {
           </div>
         </div>
 
+        {/* ── 사용자 영역 (로그인 링크 또는 로그아웃) ── */}
         <div className="flex shrink-0 items-center">
           {user ? (
             <div className="flex items-center gap-3">
@@ -70,6 +72,7 @@ export default function LayoutHeader() {
   );
 }
 
+/** 헤더 로그인 버튼용 SVG 아이콘 */
 function LoginIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
