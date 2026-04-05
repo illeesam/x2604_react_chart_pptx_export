@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     axios
-      .get(API_JSON.login)
+      .get(API_JSON.baseLoginData)
       .then((res) => setLoginCatalog(res.data))
       .catch(() => setLoginCatalog(null))
       .finally(() => setAuthReady(true));

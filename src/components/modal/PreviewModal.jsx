@@ -32,7 +32,7 @@ export default function PreviewModal({ onClose }) {
     setData(null);
     setCurrentPage(0);
     axios
-      .get(API_JSON.previewModal)
+      .get(API_JSON.previewModalData)
       .then((res) => {
         if (!cancelled) setData(res.data);
       })
@@ -63,7 +63,7 @@ export default function PreviewModal({ onClose }) {
               style={{ animation: 'spin-modal 0.8s linear infinite' }}
             />
             <p className="m-0 text-sm text-slate-500">
-              미리보기 데이터 로딩… <code className="text-xs">{API_JSON.previewModal}</code>
+              미리보기 데이터 로딩… <code className="text-xs">{API_JSON.previewModalData}</code>
             </p>
             <button
               type="button"

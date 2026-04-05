@@ -11,7 +11,7 @@ export default function BaseMain() {
 
   useEffect(() => {
     axios
-      .get(API_JSON.baseMain)
+      .get(API_JSON.baseMainData)
       .then((res) => setPayload(res.data))
       .catch((err) => setError(err.message));
   }, []);

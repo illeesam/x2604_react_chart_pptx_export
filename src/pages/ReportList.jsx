@@ -36,7 +36,7 @@ export default function ReportList() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    Promise.all([axios.get(API_JSON.reportList), axios.get(API_JSON.previewModal)])
+    Promise.all([axios.get(API_JSON.reportListData), axios.get(API_JSON.previewModalData)])
       .then(([listRes, deckRes]) => {
         if (cancelled) return;
         setListPayload(listRes.data);
@@ -195,10 +195,10 @@ export default function ReportList() {
 
       <div className="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-[13px] text-sky-700">
         <strong>데이터 로드:</strong> 화면 로드 시{' '}
-        <code className="rounded bg-sky-100 px-1">{API_JSON.reportList}</code> (목록·표) 와{' '}
-        <code className="rounded bg-sky-100 px-1">{API_JSON.previewModal}</code> (목록에서 내려받기용 덱) 을
+        <code className="rounded bg-sky-100 px-1">{API_JSON.reportListData}</code> (목록·표) 와{' '}
+        <code className="rounded bg-sky-100 px-1">{API_JSON.previewModalData}</code> (목록에서 내려받기용 덱) 을
         axios 로 불러옵니다. 미리보기 모달은 열릴 때마다{' '}
-        <code className="rounded bg-sky-100 px-1">{API_JSON.previewModal}</code> 을 다시 조회합니다.
+        <code className="rounded bg-sky-100 px-1">{API_JSON.previewModalData}</code> 을 다시 조회합니다.
       </div>
 
       {showPreview && <PreviewModal onClose={() => setShowPreview(false)} />}
