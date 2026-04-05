@@ -2,8 +2,8 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import html2canvas from 'html2canvas';
 import CoverPage from '../components/CoverPage';
-import ChartPage from '../components/ChartPage';
-import { DataPage4, DataPage5, DataPage6, DataPage7 } from '../components/DataPage';
+import ChartPage from '../components/widget/Chart01Widget';
+import { DataPage4, DataPage5, DataPage6, DataPage7 } from '../components/widget/Data01Widget';
 
 // 보고서 전체 탭 개수 (표지 0 + 차트 1~3 + 데이터 4~7)
 export const TOTAL_PAGES = 8; // 0=커버, 1~3=차트, 4~7=데이터
