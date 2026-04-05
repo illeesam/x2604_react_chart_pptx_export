@@ -2,6 +2,9 @@
  * 위젯 목록 — `widgetListData.json`, 뒤에서부터 표시.
  * 격자 배경·그리드 스냅·겹침 시 놓은 카드는 유지하고 나머지가 밀려남.
  * 타이틀 호버 시 widgetData(JSON) 툴팁.
+ * ┌ 반응형 토글: CSS 그리드(auto-fill) ↔ 절대 배치(자유 드래그)
+ * ┌ 아이콘 클릭: 위젯 배치 속성 정보 레이어
+ * ┌ 부드러운 이동: onMove 시 스냅 없이 raw 픽셀, onUp 시 스냅+겹침해소
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import axiosLib from '../utils/axiosLib';
@@ -158,6 +161,9 @@ function renderWidgetBody(widget, deck) {
   );
 }
 
+/* ──────────────────────────────────────────────────────────────
+   WidgetDataJsonPanel — 블릿 클릭 → widgetData JSON 팝오버
+────────────────────────────────────────────────────────────── */
 function WidgetDataJsonPanel({ label, widget, open, onToggle, onClose }) {
   const payload = useMemo(
     () =>
@@ -238,6 +244,123 @@ function WidgetDataJsonPanel({ label, widget, open, onToggle, onClose }) {
   );
 }
 
+/* ──────────────────────────────────────────────────────────────
+   LayoutInfoLayer — 위젯 배치 속성 정보 오버레이 패널
+   헤더 아이콘 클릭 시 표시, 모든 위젯의 x·y·w·h·z 를 테이블로 표시
+────────────────────────────────────────────────────────────── */
+function LayoutInfoLayer({ widgets, layouts, onClose }) {
+  const overlayRef = useRef(null);
+
+  // 오버레이 바깥 클릭 시 닫기
+  useEffect(() => {
+    const onDown = (e) => {
+      if (overlayRef.current && !overlayRef.current.contains(e.target)) {
+        onClose();
+      }
+    };
+    document.addEventListener('mousedown', onDown, true);
+    return () => document.removeEventListener('mousedown', onDown, true);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-[800] flex items-start justify-center bg-black/30 pt-16">
+      <div
+        ref={overlayRef}
+        className="w-full max-w-2xl rounded-xl border border-slate-200 bg-white shadow-2xl"
+        style={{ maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}
+      >
+        {/* 헤더 */}
+        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-800 px-4 py-3 rounded-t-xl">
+          <div className="flex items-center gap-2">
+            <IconLayoutWidgets className="text-white" />
+            <span className="text-sm font-bold text-white">위젯 배치 속성 정보</span>
+            <span className="ml-1 rounded-full bg-slate-600 px-2 py-0.5 text-[10px] font-semibold text-slate-300">
+              {widgets.length}개
+            </span>
+          </div>
+          <button
+            type="button"
+            className="flex size-7 items-center justify-center rounded-full text-slate-300 hover:bg-slate-700 hover:text-white"
+            onClick={onClose}
+            aria-label="닫기"
+          >
+            <IconClose />
+          </button>
+        </div>
+
+        {/* 테이블 */}
+        <div className="overflow-auto flex-1 p-0">
+          <table className="w-full border-collapse text-xs">
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-slate-100 text-slate-600">
+                <th className="border-b border-slate-200 px-3 py-2 text-left font-semibold">#</th>
+                <th className="border-b border-slate-200 px-3 py-2 text-left font-semibold">위젯 라벨</th>
+                <th className="border-b border-slate-200 px-3 py-2 text-left font-semibold">타입</th>
+                <th className="border-b border-slate-200 px-3 py-2 text-right font-semibold">X</th>
+                <th className="border-b border-slate-200 px-3 py-2 text-right font-semibold">Y</th>
+                <th className="border-b border-slate-200 px-3 py-2 text-right font-semibold">W</th>
+                <th className="border-b border-slate-200 px-3 py-2 text-right font-semibold">H</th>
+                <th className="border-b border-slate-200 px-3 py-2 text-right font-semibold">Z</th>
+                <th className="border-b border-slate-200 px-3 py-2 text-left font-semibold">pageKey</th>
+              </tr>
+            </thead>
+            <tbody>
+              {widgets.map((w, i) => {
+                const L = layouts[i];
+                const label = w.widgetAttr?.tabLabel || w.widgetType;
+                return (
+                  <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
+                    <td className="border-b border-slate-100 px-3 py-2 text-slate-400">{i + 1}</td>
+                    <td className="border-b border-slate-100 px-3 py-2 font-semibold text-slate-800">
+                      {label}
+                    </td>
+                    <td className="border-b border-slate-100 px-3 py-2">
+                      <span className="rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700">
+                        {w.widgetType}
+                      </span>
+                    </td>
+                    {L ? (
+                      <>
+                        <td className="border-b border-slate-100 px-3 py-2 text-right font-mono text-slate-600">{L.x}</td>
+                        <td className="border-b border-slate-100 px-3 py-2 text-right font-mono text-slate-600">{L.y}</td>
+                        <td className="border-b border-slate-100 px-3 py-2 text-right font-mono text-blue-600">{L.w}</td>
+                        <td className="border-b border-slate-100 px-3 py-2 text-right font-mono text-blue-600">{L.h}</td>
+                        <td className="border-b border-slate-100 px-3 py-2 text-right font-mono text-slate-500">{L.z}</td>
+                      </>
+                    ) : (
+                      <td colSpan={5} className="border-b border-slate-100 px-3 py-2 text-center text-slate-400">—</td>
+                    )}
+                    <td className="border-b border-slate-100 px-3 py-2 font-mono text-[10px] text-slate-500">
+                      {w.widgetAttr?.pageKey ?? '—'}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* 푸터 — 스냅 안내 */}
+        <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-2 rounded-b-xl">
+          <span className="text-[10px] text-slate-400">
+            스냅 {GRID}px · 최소 {MIN_W}×{MIN_H}px · 겹침해소 최대 {OVERLAP_ITER}회
+          </span>
+          <button
+            type="button"
+            className="rounded-md bg-slate-800 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-slate-900"
+            onClick={onClose}
+          >
+            닫기
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────
+   WidgetList (main export)
+────────────────────────────────────────────────────────────── */
 export default function WidgetList() {
   const [raw, setRaw] = useState(null);
   const [deck, setDeck] = useState(null);
@@ -245,10 +368,16 @@ export default function WidgetList() {
   const [error, setError] = useState(null);
   const [layouts, setLayouts] = useState([]);
   const [widgetEditEnabled, setWidgetEditEnabled] = useState(true);
+  /** 반응형 모드: true → CSS auto-fill 그리드 / false → 자유 절대 배치 */
+  const [responsive, setResponsive] = useState(false);
   const [exportFormat, setExportFormat] = useState('pdf');
   const [exportBusy, setExportBusy] = useState(false);
   /** widgetData JSON 패널 — 한 번에 하나만 열림 */
   const [widgetDataOpenIndex, setWidgetDataOpenIndex] = useState(null);
+  /** 배치 속성 정보 레이어 표시 여부 */
+  const [showLayoutInfo, setShowLayoutInfo] = useState(false);
+  /** 현재 드래그/리사이즈 중인 위젯 인덱스 (부드러운 이동을 위해 스냅 지연) */
+  const [draggingIndex, setDraggingIndex] = useState(null);
 
   const reversedWidgets = useMemo(() => {
     if (!raw?.widgets?.length) return [];
@@ -299,6 +428,7 @@ export default function WidgetList() {
     });
   }, []);
 
+  // ── 부드러운 이동: onMove 시 스냅 없이 raw 픽셀, onUp 시 스냅+겹침해소 ──
   const startMove = useCallback(
     (e, index) => {
       if (!widgetEditEnabled) return;
@@ -306,6 +436,8 @@ export default function WidgetList() {
       const L = layouts[index];
       if (!L) return;
       bringToFront(index);
+      setDraggingIndex(index);
+
       const startMx = e.clientX;
       const startMy = e.clientY;
       const startX = L.x;
@@ -314,29 +446,35 @@ export default function WidgetList() {
       const onMove = (ev) => {
         const dx = ev.clientX - startMx;
         const dy = ev.clientY - startMy;
+        // 스냅 없이 raw 픽셀로 이동 → 부드럽게
         setLayouts((prev) =>
           prev.map((row, i) =>
             i === index
               ? {
                   ...row,
-                  x: Math.max(0, snap(startX + dx)),
-                  y: Math.max(0, snap(startY + dy)),
+                  x: Math.max(0, startX + dx),
+                  y: Math.max(0, startY + dy),
                 }
               : row,
           ),
         );
       };
+
       const onUp = () => {
         window.removeEventListener('mousemove', onMove);
         window.removeEventListener('mouseup', onUp);
+        setDraggingIndex(null);
+        // mouseUp 시에만 스냅 + 겹침 해소
         setLayouts((prev) => resolveOverlaps(prev, index));
       };
+
       window.addEventListener('mousemove', onMove);
       window.addEventListener('mouseup', onUp);
     },
     [layouts, bringToFront, widgetEditEnabled],
   );
 
+  // ── 부드러운 크기 조절: onMove 시 스냅 없이, onUp 시 스냅+겹침해소 ──
   const startResize = useCallback(
     (e, index, dir) => {
       if (!widgetEditEnabled) return;
@@ -344,6 +482,8 @@ export default function WidgetList() {
       const L = layouts[index];
       if (!L) return;
       bringToFront(index);
+      setDraggingIndex(index);
+
       const startMx = e.clientX;
       const startMy = e.clientY;
       const { x: sx, y: sy, w: sw, h: sh } = L;
@@ -386,25 +526,30 @@ export default function WidgetList() {
         if (dir === 'sw' || dir === 'nw') x = sx + sw - w;
         if (dir === 'ne' || dir === 'nw') y = sy + sh - h;
 
+        // 스냅 없이 raw 픽셀 → 부드럽게
         setLayouts((prev) =>
           prev.map((row, i) =>
             i === index
               ? {
                   ...row,
-                  x: Math.max(0, snap(x)),
-                  y: Math.max(0, snap(y)),
-                  w: snap(Math.max(MIN_W, w)),
-                  h: snap(Math.max(MIN_H, h)),
+                  x: Math.max(0, x),
+                  y: Math.max(0, y),
+                  w: Math.max(MIN_W, w),
+                  h: Math.max(MIN_H, h),
                 }
               : row,
           ),
         );
       };
+
       const onUp = () => {
         window.removeEventListener('mousemove', onMove);
         window.removeEventListener('mouseup', onUp);
+        setDraggingIndex(null);
+        // mouseUp 시에만 스냅 + 겹침 해소
         setLayouts((prev) => resolveOverlaps(prev, index));
       };
+
       window.addEventListener('mousemove', onMove);
       window.addEventListener('mouseup', onUp);
     },
@@ -462,12 +607,34 @@ export default function WidgetList() {
 
   return (
     <div className="mx-auto max-w-[1400px] px-4 pb-16 pt-6 sm:px-6">
+      {/* ── 배치 속성 정보 레이어 ── */}
+      {showLayoutInfo && (
+        <LayoutInfoLayer
+          widgets={reversedWidgets}
+          layouts={layouts}
+          onClose={() => setShowLayoutInfo(false)}
+        />
+      )}
+
       <header className="mb-4 border-b border-slate-200 pb-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3">
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-md">
-              <IconLayoutWidgets />
-            </span>
+            {/* 아이콘 클릭 → 배치 속성 정보 레이어 */}
+            <button
+              type="button"
+              title="위젯 배치 속성 정보 보기"
+              aria-label="위젯 배치 속성 정보 레이어 열기"
+              onClick={() => setShowLayoutInfo((v) => !v)}
+              className={[
+                'flex size-11 shrink-0 items-center justify-center rounded-xl shadow-md transition-colors',
+                showLayoutInfo
+                  ? 'bg-gradient-to-br from-blue-600 to-indigo-700 ring-2 ring-blue-400 ring-offset-1'
+                  : 'bg-gradient-to-br from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700',
+              ].join(' ')}
+            >
+              <IconLayoutWidgets className="text-white" />
+            </button>
+
             <div className="min-w-0">
               <h1 className="m-0 flex flex-wrap items-center gap-2 text-xl font-bold tracking-tight text-slate-900">
                 위젯 목록
@@ -489,9 +656,39 @@ export default function WidgetList() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 sm:justify-end">
+            {/* ── 반응형 토글 ── */}
             <div
               className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/90 px-3 py-2"
-              title="편집 끄면 이동·리사이즈 불가"
+              title="반응형: CSS 그리드 자동 배치 / 해제: 자유 드래그 배치"
+            >
+              <IconResponsive className="shrink-0 text-slate-500" />
+              <span className="text-xs font-semibold text-slate-600">반응형</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={responsive}
+                onClick={() => setResponsive((v) => !v)}
+                className={[
+                  'relative h-7 w-12 shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+                  responsive ? 'bg-emerald-500' : 'bg-slate-300',
+                ].join(' ')}
+              >
+                <span
+                  className={[
+                    'absolute top-0.5 left-0.5 size-6 rounded-full bg-white shadow transition-transform duration-200',
+                    responsive ? 'translate-x-5' : 'translate-x-0',
+                  ].join(' ')}
+                />
+              </button>
+            </div>
+
+            {/* ── 위젯 편집 토글 (반응형 모드에서는 비활성) ── */}
+            <div
+              className={[
+                'flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/90 px-3 py-2',
+                responsive ? 'opacity-40 pointer-events-none' : '',
+              ].join(' ')}
+              title={responsive ? '반응형 모드에서는 드래그 비활성' : '편집 끄면 이동·리사이즈 불가'}
             >
               <IconSliders className="shrink-0 text-slate-500" />
               <span className="text-xs font-semibold text-slate-600">위젯 편집</span>
@@ -507,7 +704,7 @@ export default function WidgetList() {
               >
                 <span
                   className={[
-                    'absolute top-0.5 left-0.5 size-6 rounded-full bg-white shadow transition-transform',
+                    'absolute top-0.5 left-0.5 size-6 rounded-full bg-white shadow transition-transform duration-200',
                     widgetEditEnabled ? 'translate-x-5' : 'translate-x-0',
                   ].join(' ')}
                 />
@@ -551,96 +748,152 @@ export default function WidgetList() {
         </div>
 
         <p className="mt-3 m-0 border-t border-slate-100 pt-3 text-sm text-slate-500">
-          카드 <strong>헤더</strong>를 드래그해 이동합니다. 겹치면 다른 카드가 밀려납니다. 제목 왼쪽{' '}
-          <strong>블릿</strong>을 누르면 <code className="text-xs">widgetData</code> JSON이 열리며,{' '}
-          <strong>×</strong> 또는 패널 바깥을 누르면 닫힙니다.
+          {responsive ? (
+            <>
+              <strong>반응형 모드</strong>: CSS auto-fill 그리드 배치 · 드래그 비활성.
+              왼쪽 <strong>아이콘</strong>을 클릭하면 배치 속성 정보를 볼 수 있습니다.
+            </>
+          ) : (
+            <>
+              카드 <strong>헤더</strong>를 드래그해 이동합니다. 겹치면 다른 카드가 밀려납니다. 제목 왼쪽{' '}
+              <strong>블릿</strong>을 누르면 <code className="text-xs">widgetData</code> JSON이 열리며,{' '}
+              <strong>×</strong> 또는 패널 바깥을 누르면 닫힙니다.
+              왼쪽 <strong>아이콘</strong>을 클릭하면 배치 속성 정보를 볼 수 있습니다.
+            </>
+          )}
         </p>
       </header>
 
-      <div
-        className="relative w-full rounded-xl border border-slate-300"
-        style={{ ...gridStyle, minHeight: minCanvasH }}
-      >
-        {reversedWidgets.map((w, i) => {
-          const L = layouts[i];
-          if (!L) return null;
-          const label = w.widgetAttr?.tabLabel || w.widgetType;
-          return (
-            <div
-              key={`${w.widgetType}-${reversedWidgets.length - 1 - i}`}
-              className="absolute box-border overflow-visible rounded-lg border border-slate-300 bg-white shadow-md"
-              style={{
-                left: L.x,
-                top: L.y,
-                width: L.w,
-                height: L.h,
-                zIndex: L.z,
-              }}
-              onMouseDown={() => bringToFront(i)}
-            >
+      {/* ── 반응형 모드: CSS 그리드 ── */}
+      {responsive ? (
+        <div
+          className="rounded-xl border border-slate-300 p-4"
+          style={{ ...gridStyle }}
+        >
+          <div
+            className="grid gap-5"
+            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))' }}
+          >
+            {reversedWidgets.map((w, i) => {
+              const label = w.widgetAttr?.tabLabel || w.widgetType;
+              return (
+                <div
+                  key={`resp-${w.widgetType}-${i}`}
+                  className="flex flex-col rounded-lg border border-slate-300 bg-white shadow-md"
+                  style={{ minHeight: 320 }}
+                >
+                  <div className="flex h-9 shrink-0 select-none items-center border-b border-slate-200 bg-slate-100/95 px-2">
+                    <WidgetDataJsonPanel
+                      label={label}
+                      widget={w}
+                      open={widgetDataOpenIndex === i}
+                      onToggle={() =>
+                        setWidgetDataOpenIndex((cur) => (cur === i ? null : i))
+                      }
+                      onClose={closeWidgetDataPanel}
+                    />
+                  </div>
+                  <div className="min-h-0 flex-1 overflow-auto bg-white p-2">
+                    {renderWidgetBody(w, deck)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        /* ── 자유 배치 모드: 절대 위치 드래그·리사이즈 ── */
+        <div
+          className="relative w-full rounded-xl border border-slate-300"
+          style={{ ...gridStyle, minHeight: minCanvasH }}
+        >
+          {reversedWidgets.map((w, i) => {
+            const L = layouts[i];
+            if (!L) return null;
+            const label = w.widgetAttr?.tabLabel || w.widgetType;
+            const isDragging = draggingIndex === i;
+            return (
               <div
-                className={[
-                  'relative flex h-9 shrink-0 select-none items-center border-b border-slate-200 bg-slate-100/95 px-2',
-                  widgetEditEnabled
-                    ? 'cursor-grab active:cursor-grabbing'
-                    : 'cursor-default',
-                ].join(' ')}
-                title={widgetEditEnabled ? '헤더를 드래그하여 이동' : '편집이 꺼져 있습니다'}
-                onMouseDown={(e) => widgetEditEnabled && startMove(e, i)}
+                key={`${w.widgetType}-${reversedWidgets.length - 1 - i}`}
+                className="absolute box-border overflow-visible rounded-lg border border-slate-300 bg-white shadow-md"
+                style={{
+                  left: L.x,
+                  top: L.y,
+                  width: L.w,
+                  height: L.h,
+                  zIndex: L.z,
+                  // 드래그 중: GPU 가속, 스냅 전환 없음 / 정지 중: 부드러운 settle
+                  transition: isDragging ? 'none' : 'left 0.12s ease-out, top 0.12s ease-out, width 0.12s ease-out, height 0.12s ease-out',
+                  willChange: isDragging ? 'left, top, width, height' : 'auto',
+                }}
+                onMouseDown={() => bringToFront(i)}
               >
-                <WidgetDataJsonPanel
-                  label={label}
-                  widget={w}
-                  open={widgetDataOpenIndex === i}
-                  onToggle={() =>
-                    setWidgetDataOpenIndex((cur) => (cur === i ? null : i))
-                  }
-                  onClose={closeWidgetDataPanel}
-                />
-              </div>
-              <div className="h-[calc(100%-2.25rem)] overflow-auto bg-white p-2">
-                {renderWidgetBody(w, deck)}
-              </div>
+                <div
+                  className={[
+                    'relative flex h-9 shrink-0 select-none items-center border-b border-slate-200 bg-slate-100/95 px-2',
+                    widgetEditEnabled
+                      ? 'cursor-grab active:cursor-grabbing'
+                      : 'cursor-default',
+                  ].join(' ')}
+                  title={widgetEditEnabled ? '헤더를 드래그하여 이동' : '편집이 꺼져 있습니다'}
+                  onMouseDown={(e) => widgetEditEnabled && startMove(e, i)}
+                >
+                  <WidgetDataJsonPanel
+                    label={label}
+                    widget={w}
+                    open={widgetDataOpenIndex === i}
+                    onToggle={() =>
+                      setWidgetDataOpenIndex((cur) => (cur === i ? null : i))
+                    }
+                    onClose={closeWidgetDataPanel}
+                  />
+                </div>
+                <div className="h-[calc(100%-2.25rem)] overflow-auto bg-white p-2">
+                  {renderWidgetBody(w, deck)}
+                </div>
 
-              {widgetEditEnabled && (
-                <>
-                  <button
-                    type="button"
-                    aria-label="왼쪽 위 크기 조절"
-                    className={`${handleCls} -left-1.5 -top-1.5 cursor-nw-resize`}
-                    onMouseDown={(e) => startResize(e, i, 'nw')}
-                  />
-                  <button
-                    type="button"
-                    aria-label="오른쪽 위 크기 조절"
-                    className={`${handleCls} -right-1.5 -top-1.5 cursor-ne-resize`}
-                    onMouseDown={(e) => startResize(e, i, 'ne')}
-                  />
-                  <button
-                    type="button"
-                    aria-label="왼쪽 아래 크기 조절"
-                    className={`${handleCls} -bottom-1.5 -left-1.5 cursor-sw-resize`}
-                    onMouseDown={(e) => startResize(e, i, 'sw')}
-                  />
-                  <button
-                    type="button"
-                    aria-label="오른쪽 아래 크기 조절"
-                    className={`${handleCls} -bottom-1.5 -right-1.5 cursor-se-resize`}
-                    onMouseDown={(e) => startResize(e, i, 'se')}
-                  />
-                </>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                {widgetEditEnabled && (
+                  <>
+                    <button
+                      type="button"
+                      aria-label="왼쪽 위 크기 조절"
+                      className={`${handleCls} -left-1.5 -top-1.5 cursor-nw-resize`}
+                      onMouseDown={(e) => startResize(e, i, 'nw')}
+                    />
+                    <button
+                      type="button"
+                      aria-label="오른쪽 위 크기 조절"
+                      className={`${handleCls} -right-1.5 -top-1.5 cursor-ne-resize`}
+                      onMouseDown={(e) => startResize(e, i, 'ne')}
+                    />
+                    <button
+                      type="button"
+                      aria-label="왼쪽 아래 크기 조절"
+                      className={`${handleCls} -bottom-1.5 -left-1.5 cursor-sw-resize`}
+                      onMouseDown={(e) => startResize(e, i, 'sw')}
+                    />
+                    <button
+                      type="button"
+                      aria-label="오른쪽 아래 크기 조절"
+                      className={`${handleCls} -bottom-1.5 -right-1.5 cursor-se-resize`}
+                      onMouseDown={(e) => startResize(e, i, 'se')}
+                    />
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
 
-function IconLayoutWidgets() {
+/* ── SVG 아이콘 모음 ── */
+
+function IconLayoutWidgets({ className = '' }) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <svg className={className} width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
       <path
         d="M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z"
         stroke="currentColor"
@@ -668,6 +921,17 @@ function IconSliders({ className = '' }) {
         strokeWidth="2"
         strokeLinecap="round"
       />
+    </svg>
+  );
+}
+
+/** 반응형 토글 아이콘 (화면 크기 조절 모양) */
+function IconResponsive({ className = '' }) {
+  return (
+    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="2" />
+      <path d="M7 19v2M17 19v2M7 3v2M17 3v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M9 12h6M12 9l3 3-3 3" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
