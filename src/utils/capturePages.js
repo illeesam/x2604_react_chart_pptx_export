@@ -2,19 +2,11 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import html2canvas from 'html2canvas';
 import CoverPage from '../components/CoverPage';
-import ChartPage from '../components/widget/Chart01Widget';
-import { DataPage4, DataPage5, DataPage6, DataPage7 } from '../components/widget/Data01Widget';
+import Chart01Widget from '../components/widget/Chart01Widget';
+import Data01Widget from '../components/widget/Data01Widget';
 import { buildPreviewSlots, getPreviewPageCount } from './previewLayout';
 
 export { getPreviewPageCount } from './previewLayout';
-
-/** dataPages 키 → React 데이터 페이지 위젯 */
-const DATA_PAGE_BY_KEY = {
-  page4: DataPage4,
-  page5: DataPage5,
-  page6: DataPage6,
-  page7: DataPage7,
-};
 
 /** 슬롯 인덱스에 해당하는 단일 페이지 React 엘리먼트 (미리보기·오프스크린 캡처 공용) */
 export function getPageElement(data, pageNum) {
@@ -25,12 +17,11 @@ export function getPageElement(data, pageNum) {
     case 'cover':
       return <CoverPage data={data} />;
     case 'chart':
-      return <ChartPage pageData={data.charts[slot.key]} pageNum={slot.chartNum} />;
-    case 'data': {
-      const Comp = DATA_PAGE_BY_KEY[slot.key];
-      if (!Comp) return null;
-      return <Comp data={data.dataPages[slot.key]} />;
-    }
+      return <Chart01Widget pageData={data.charts[slot.key]} pageNum={slot.chartNum} />;
+    case 'data':
+      return (
+        <Data01Widget data={data.dataPages[slot.key]} pageKey={slot.key} />
+      );
     default:
       return null;
   }

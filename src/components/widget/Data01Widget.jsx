@@ -1,4 +1,5 @@
-// Data01Widget — 데이터 페이지 컴포넌트 모음 (page4~7)
+// Data01Widget — 데이터 페이지 (layoutType 별 레이아웃 + default export 라우터)
+import React from 'react';
 import {
   DATA_PAGE_LAYOUT_CLASS,
   resolveDataPage4,
@@ -6,6 +7,19 @@ import {
   resolveDataPage6,
   resolveDataPage7,
 } from '../../utils/previewDeckLayout';
+
+/** 슬롯 키 → JSON 에 layoutType 이 없을 때 기본 템플릿 */
+const PAGE_KEY_TO_DEFAULT_LAYOUT = {
+  page4: 'dataPage4_stack',
+  page5: 'dataPage5_single',
+  page6: 'dataPage6_stack',
+  page7: 'dataPage7_stack',
+};
+
+function pageNumFromKey(pageKey) {
+  const m = String(pageKey || '').match(/(\d+)/);
+  return m ? Number(m[1]) : 4;
+}
 
 function AreaShell({ areaNo, children, className = '' }) {
   return (
@@ -18,8 +32,7 @@ function AreaShell({ areaNo, children, className = '' }) {
   );
 }
 
-export function DataPage4({ data }) {
-  if (!data) return null;
+function dataPage4_stack({ data, pageNum }) {
   const flat = resolveDataPage4(data);
   const s = flat.summary;
   const layoutClass = data.layoutType
@@ -82,7 +95,7 @@ export function DataPage4({ data }) {
 
   return (
     <div className={`box-border w-full bg-white p-6 ${layoutClass}`}>
-      <PageHeader num={4} title={data.title} />
+      <PageHeader num={pageNum} title={data.title} />
       {data.areas ? (
         <>
           <AreaShell areaNo="1">{kpiBlock}</AreaShell>
@@ -98,8 +111,7 @@ export function DataPage4({ data }) {
   );
 }
 
-export function DataPage5({ data }) {
-  if (!data) return null;
+function dataPage5_single({ data, pageNum }) {
   const flat = resolveDataPage5(data);
   const layoutClass = data.layoutType
     ? DATA_PAGE_LAYOUT_CLASS[data.layoutType] || DATA_PAGE_LAYOUT_CLASS.dataPage5_single
@@ -138,14 +150,13 @@ export function DataPage5({ data }) {
 
   return (
     <div className={`box-border w-full bg-white p-6 ${layoutClass}`}>
-      <PageHeader num={5} title={data.title} />
+      <PageHeader num={pageNum} title={data.title} />
       {data.areas ? <AreaShell areaNo="1">{table}</AreaShell> : table}
     </div>
   );
 }
 
-export function DataPage6({ data }) {
-  if (!data) return null;
+function dataPage6_stack({ data, pageNum }) {
   const flat = resolveDataPage6(data);
   const layoutClass = data.layoutType
     ? DATA_PAGE_LAYOUT_CLASS[data.layoutType] || DATA_PAGE_LAYOUT_CLASS.dataPage6_stack
@@ -212,7 +223,7 @@ export function DataPage6({ data }) {
 
   return (
     <div className={`box-border w-full bg-white p-6 ${layoutClass}`}>
-      <PageHeader num={6} title={data.title} />
+      <PageHeader num={pageNum} title={data.title} />
       {data.areas ? (
         <>
           <AreaShell areaNo="1">{kpiRow}</AreaShell>
@@ -228,8 +239,7 @@ export function DataPage6({ data }) {
   );
 }
 
-export function DataPage7({ data }) {
-  if (!data) return null;
+function dataPage7_stack({ data, pageNum }) {
   const flat = resolveDataPage7(data);
   const t = flat.targets;
   const STATUS_COLOR = { 진행중: '#10b981', 계획: '#3b82f6', 완료: '#6366f1' };
@@ -332,7 +342,7 @@ export function DataPage7({ data }) {
 
   return (
     <div className={`box-border w-full bg-white p-6 ${layoutClass}`}>
-      <PageHeader num={7} title={data.title} />
+      <PageHeader num={pageNum} title={data.title} />
       {data.areas ? (
         <>
           <AreaShell areaNo="1">{targetsBlock}</AreaShell>
@@ -357,4 +367,21 @@ function PageHeader({ num, title }) {
       <h2 className="m-0 text-lg font-bold text-slate-800">{title}</h2>
     </div>
   );
+}
+
+const LAYOUTS = {
+  dataPage4_stack: dataPage4_stack,
+  dataPage5_single: dataPage5_single,
+  dataPage6_stack: dataPage6_stack,
+  dataPage7_stack: dataPage7_stack,
+};
+
+/** pageKey + data.layoutType(또는 pageKey 기본값)으로 레이아웃 분기 */
+export default function Data01Widget({ data, pageKey }) {
+  if (!data) return null;
+  const lt = data.layoutType || PAGE_KEY_TO_DEFAULT_LAYOUT[pageKey];
+  const Render = lt ? LAYOUTS[lt] : null;
+  if (!Render) return null;
+  const pageNum = pageNumFromKey(pageKey);
+  return React.createElement(Render, { data, pageNum });
 }

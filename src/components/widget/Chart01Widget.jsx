@@ -702,7 +702,7 @@ function EditPanel({ chartData, onSave, onClose }) {
    ChartCard — 개별 차트 카드
    · 타입 뱃지 호버 → TipNode 윈도우트리 툴팁
    · ✏️ 편집 아이콘 클릭 → EditPanel 오픈
-   · onUpdate 콜백으로 부모(ChartPage)에 수정 데이터 전달
+   · onUpdate 콜백으로 부모(Chart01Widget)에 수정 데이터 전달
 ────────────────────────────────────────────────────────────── */
 function ChartCard({ chartData, onUpdate }) {
   // 툴팁 표시 여부
@@ -766,12 +766,12 @@ function ChartCard({ chartData, onUpdate }) {
 }
 
 /* ──────────────────────────────────────────────────────────────
-   ChartPage (default export) — 페이지 헤더 + 2×3 차트 그리드
+   Chart01Widget (default export) — 페이지 헤더 + layoutType 그리드
    · localCharts 로컬 상태로 편집 결과 반영
    · pageData: 해당 슬라이드 차트 JSON
    · pageNum: 미리보기 탭 번호 (1~3)
 ────────────────────────────────────────────────────────────── */
-export default function ChartPage({ pageData, pageNum }) {
+export default function Chart01Widget({ pageData, pageNum }) {
   const { charts: initialCharts, layoutType, title } = resolveChartPageLayout(pageData);
   const [localCharts, setLocalCharts] = useState(() => initialCharts.map((c) => JSON.parse(JSON.stringify(c))));
 
