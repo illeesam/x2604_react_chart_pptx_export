@@ -180,90 +180,6 @@ function renderWidgetBody(widget, deck) {
   );
 }
 
-/* ────────────────────────────────────────────────────────────
-   WidgetDataJsonPanel
-   카드 헤더 블릿 클릭 → widgetData JSON 팝오버 표시
-   open / onToggle / onClose 로 부모가 열림 상태 제어
-──────────────────────────────────────────────────────────── */
-function WidgetDataJsonPanel({ label, widget, open, onToggle, onClose }) {
-  // JSON 직렬화는 widget 변경 시에만 재계산
-  const payload = useMemo(
-    () => JSON.stringify(
-      {
-        widgetType: widget.widgetType,
-        widgetAttr: widget.widgetAttr ?? null,
-        widgetData: widget.widgetData ?? null,
-      },
-      null, 2,
-    ),
-    [widget],
-  );
-
-  const panelRef  = useRef(null); // 팝오버 DOM 참조 (바깥 클릭 감지용)
-  const bulletRef = useRef(null); // 블릿 버튼 DOM 참조 (바깥 클릭 예외 처리용)
-
-  // 팝오버 열림 시 document 클릭 감지 → 바깥 클릭이면 onClose 호출
-  useEffect(() => {
-    if (!open) return;
-    const onDocDown = (e) => {
-      if (panelRef.current?.contains(e.target))  return; // 팝오버 내부 클릭 → 유지
-      if (bulletRef.current?.contains(e.target)) return; // 블릿 버튼 클릭 → onToggle 이 처리
-      onClose();
-    };
-    document.addEventListener('mousedown', onDocDown, true);
-    return () => document.removeEventListener('mousedown', onDocDown, true);
-  }, [open, onClose]);
-
-  return (
-    <div className="relative flex min-w-0 flex-1 items-center gap-1.5">
-      {/* 블릿 버튼 — 클릭 시 팝오버 토글 */}
-      <button
-        ref={bulletRef}
-        type="button"
-        aria-expanded={open}
-        aria-label={`${label} — widgetData JSON 열기/닫기`}
-        title="widgetData JSON"
-        className="flex size-6 shrink-0 items-center justify-center rounded-md border border-slate-300/90 bg-white text-slate-500 shadow-sm hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700"
-        onMouseDown={(e) => e.stopPropagation()} // 드래그 이벤트 차단
-        onClick={(e) => { e.stopPropagation(); onToggle(); }}
-      >
-        <IconBullet />
-      </button>
-
-      {/* 카드 라벨 (truncate 처리) */}
-      <span className="min-w-0 flex-1 truncate text-xs font-semibold text-slate-700">{label}</span>
-
-      {/* JSON 팝오버 — open 상태일 때만 렌더 */}
-      {open && (
-        <div
-          ref={panelRef}
-          className="absolute left-0 top-full z-[600] mt-1 max-h-72 w-[min(100vw-2rem,28rem)] overflow-hidden rounded-lg border border-slate-300 bg-white shadow-xl"
-          role="dialog"
-          aria-label="widgetData JSON"
-          onMouseDown={(e) => e.stopPropagation()}
-        >
-          {/* 팝오버 헤더 */}
-          <div className="flex items-center justify-between gap-2 border-b border-slate-200 bg-slate-50 px-2 py-1.5">
-            <span className="text-[10px] font-bold text-slate-500">widgetData · JSON</span>
-            <button
-              type="button"
-              className="flex size-7 items-center justify-center rounded-md text-slate-500 hover:bg-slate-200 hover:text-slate-800"
-              aria-label="닫기"
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={(e) => { e.stopPropagation(); onClose(); }}
-            >
-              <IconClose />
-            </button>
-          </div>
-          {/* JSON 본문 */}
-          <pre className="max-h-64 overflow-auto p-2 text-left font-mono text-[10px] leading-snug text-slate-800">
-            {payload}
-          </pre>
-        </div>
-      )}
-    </div>
-  );
-}
 
 /* ────────────────────────────────────────────────────────────
    WidgetLayoutInfoPanel
@@ -274,20 +190,15 @@ function WidgetLayoutInfoPanel({ label, widget, layout, open, onToggle, onClose 
   const btnRef   = useRef(null); // 아이콘 버튼 참조
   const panelRef = useRef(null); // 팝오버 DOM 참조
 
-  /** JSON 직렬화 — layout·widget 변경 시에만 재계산 */
+  /** JSON 직렬화 — widget 변경 시에만 재계산 (widgetData JSON 패널과 동일한 내용) */
   const jsonText = useMemo(() => JSON.stringify(
     {
-      label,
       widgetType: widget.widgetType,
-      pageKey:    widget.widgetAttr?.pageKey ?? null,
-      x: layout?.x ?? null,
-      y: layout?.y ?? null,
-      w: layout?.w ?? null,
-      h: layout?.h ?? null,
-      z: layout?.z ?? null,
+      widgetAttr: widget.widgetAttr ?? null,
+      widgetData: widget.widgetData ?? null,
     },
     null, 2,
-  ), [label, widget, layout]);
+  ), [widget]);
 
   const [copied, setCopied] = useState(false); // 복사 완료 피드백 상태
 
@@ -332,7 +243,7 @@ function WidgetLayoutInfoPanel({ label, widget, layout, open, onToggle, onClose 
       {open && (
         <div
           ref={panelRef}
-          className="absolute left-0 top-full z-[620] mt-1 w-[min(100vw-2rem,20rem)] overflow-hidden rounded-lg border border-slate-300 bg-white shadow-xl"
+          className="absolute left-0 top-full z-[620] mt-1 w-[min(100vw-2rem,28rem)] overflow-hidden rounded-lg border border-slate-300 bg-white shadow-xl"
           role="dialog"
           aria-label="위젯 배치 위치 정보"
           onMouseDown={(e) => e.stopPropagation()}
@@ -392,7 +303,7 @@ function WidgetLayoutInfoPanel({ label, widget, layout, open, onToggle, onClose 
               </button>
             </div>
             {/* 드래그 선택 가능한 JSON pre */}
-            <pre className="select-text max-h-32 overflow-auto rounded bg-slate-50 p-2 font-mono text-[10px] leading-snug text-slate-700">
+            <pre className="select-text max-h-72 overflow-auto rounded bg-slate-950 p-2 font-mono text-[10px] leading-snug text-emerald-300 whitespace-pre-wrap break-all">
               {jsonText}
             </pre>
           </div>
@@ -512,10 +423,132 @@ function LayoutInfoLayer({ widgets, layouts, onClose }) {
 }
 
 /* ────────────────────────────────────────────────────────────
+   PropsInfoLayer
+   헤더 아이콘 클릭 → raw / deck props 전체를 JSON 으로 보여주는 오버레이
+   탭(raw / deck) 전환, 드래그 선택·복사 가능
+──────────────────────────────────────────────────────────── */
+function PropsInfoLayer({ raw, deck, onClose }) {
+  const overlayRef = useRef(null);
+  const [tab,    setTab]    = useState('raw');   // 'raw' | 'deck'
+  const [copied, setCopied] = useState(false);
+
+  /** raw / deck JSON — 탭 변경 시에만 재계산 */
+  const rawJson  = useMemo(() => JSON.stringify(raw,  null, 2), [raw]);
+  const deckJson = useMemo(() => JSON.stringify(deck, null, 2), [deck]);
+  const activeJson = tab === 'raw' ? rawJson : deckJson;
+
+  /** 클립보드 복사 */
+  const handleCopy = () => {
+    navigator.clipboard.writeText(activeJson).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  };
+
+  // 패널 바깥 클릭 시 닫기
+  useEffect(() => {
+    const onDown = (e) => {
+      if (overlayRef.current && !overlayRef.current.contains(e.target)) onClose();
+    };
+    document.addEventListener('mousedown', onDown, true);
+    return () => document.removeEventListener('mousedown', onDown, true);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-[800] flex items-start justify-center bg-black/40 pt-14">
+      <div
+        ref={overlayRef}
+        className="flex w-full max-w-3xl flex-col rounded-xl border border-slate-200 bg-white shadow-2xl"
+        style={{ maxHeight: '82vh' }}
+      >
+        {/* 헤더 */}
+        <div className="flex items-center justify-between rounded-t-xl border-b border-slate-700 bg-slate-900 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <IconLayers className="text-slate-300" />
+            <span className="text-sm font-bold text-white">Props 정보</span>
+            <span className="rounded-full bg-slate-700 px-2 py-0.5 text-[10px] font-semibold text-slate-300">
+              Base01WidgetPanel
+            </span>
+          </div>
+          <button
+            type="button"
+            className="flex size-7 items-center justify-center rounded-full text-slate-400 hover:bg-slate-700 hover:text-white"
+            onClick={onClose}
+            aria-label="닫기"
+          >
+            <IconClose />
+          </button>
+        </div>
+
+        {/* 탭 바 + 복사 버튼 */}
+        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-3 py-1.5">
+          <div className="flex gap-1">
+            {[
+              { key: 'raw',  label: 'raw',  desc: 'widgetListData 원본' },
+              { key: 'deck', label: 'deck', desc: 'normalizePreviewModalData 결과' },
+            ].map(({ key, label, desc }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setTab(key)}
+                title={desc}
+                className={[
+                  'rounded-md px-3 py-1 text-xs font-semibold transition-colors',
+                  tab === key
+                    ? 'bg-slate-800 text-white'
+                    : 'text-slate-500 hover:bg-slate-200 hover:text-slate-700',
+                ].join(' ')}
+              >
+                {label}
+                <span className="ml-1 text-[10px] opacity-60">{desc}</span>
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={handleCopy}
+            className={[
+              'rounded px-2.5 py-1 text-[11px] font-semibold transition-colors',
+              copied
+                ? 'bg-emerald-100 text-emerald-700'
+                : 'bg-slate-200 text-slate-600 hover:bg-indigo-100 hover:text-indigo-700',
+            ].join(' ')}
+          >
+            {copied ? '✓ 복사됨' : '복사'}
+          </button>
+        </div>
+
+        {/* JSON 본문 — 드래그 선택·복사 가능 */}
+        <div className="min-h-0 flex-1 overflow-auto bg-slate-950 p-4">
+          <pre className="select-text font-mono text-[11px] leading-relaxed text-emerald-300 whitespace-pre-wrap break-all">
+            {activeJson}
+          </pre>
+        </div>
+
+        {/* 푸터 */}
+        <div className="flex items-center justify-between rounded-b-xl border-t border-slate-200 bg-slate-50 px-4 py-2">
+          <span className="text-[10px] text-slate-400">
+            raw: {(rawJson?.length ?? 0).toLocaleString()} chars &nbsp;·&nbsp;
+            deck: {(deckJson?.length ?? 0).toLocaleString()} chars
+          </span>
+          <button
+            type="button"
+            className="rounded-md bg-slate-800 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-slate-900"
+            onClick={onClose}
+          >
+            닫기
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────
    Base01WidgetPanel (default export)
    Props: raw {object}, deck {object}
 ──────────────────────────────────────────────────────────── */
-export default function Base01WidgetPanel({ raw, deck, panelType = 'grid' }) {
+export default function Base01WidgetPanel({ raw, deck, panelType: panelTypeProp = 'grid' }) {
   /* ── UI 상태 ── */
   const [layouts, setLayouts]                     = useState([]);       // 위젯별 { x, y, w, h, z }
   const [widgetEditEnabled, setWidgetEditEnabled] = useState(true);     // 드래그·리사이즈 활성 여부
@@ -523,10 +556,12 @@ export default function Base01WidgetPanel({ raw, deck, panelType = 'grid' }) {
   const [responsiveCols, setResponsiveCols]       = useState(3);        // 반응형 열 수 (1~5)
   const [exportFormat, setExportFormat]           = useState('pdf');    // 선택된 다운로드 형식
   const [exportBusy, setExportBusy]               = useState(false);    // 다운로드 진행 중 여부
+  const [localPanelType, setLocalPanelType]               = useState(panelTypeProp); // 'grid' | 'tab' — select 로 변경 가능
+  const panelType = localPanelType; // 이하 코드에서 panelType 으로 참조
   const [expanded, setExpanded]                           = useState(false); // true: 좌우 여백 제거, 전체 너비 확장
-  const [widgetDataOpenIndex, setWidgetDataOpenIndex]     = useState(null); // JSON 팝오버 열린 위젯 인덱스
   const [widgetLayoutOpenIndex, setWidgetLayoutOpenIndex] = useState(null); // 위치 정보 팝오버 열린 위젯 인덱스
   const [showLayoutInfo, setShowLayoutInfo]               = useState(false); // 배치 속성 레이어 표시 여부
+  const [showPropsInfo,  setShowPropsInfo]                = useState(false); // props JSON 레이어 표시 여부
   const [draggingIndex, setDraggingIndex]         = useState(null);     // 현재 드래그·리사이즈 중인 위젯 인덱스
   const [activeTabIndex, setActiveTabIndex]       = useState(0);        // 탭 모드에서 현재 선택된 위젯 인덱스
 
@@ -555,8 +590,7 @@ export default function Base01WidgetPanel({ raw, deck, panelType = 'grid' }) {
 
   /* ── 콜백 ── */
 
-  /** JSON 팝오버 전체 닫기 */
-  const closeWidgetDataPanel = useCallback(() => setWidgetDataOpenIndex(null), []);
+
 
   /** 위치 정보 팝오버 전체 닫기 */
   const closeWidgetLayoutPanel = useCallback(() => setWidgetLayoutOpenIndex(null), []);
@@ -741,6 +775,21 @@ export default function Base01WidgetPanel({ raw, deck, panelType = 'grid' }) {
 
             {/* 우측: 좌우 확장 + 다운로드 */}
             <div className="flex flex-wrap items-center gap-3 sm:justify-end">
+              {/* 패널 유형 선택 */}
+              <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/90 px-3 py-2">
+                <IconLayoutWidgets className="shrink-0 text-slate-500" style={{ width: 16, height: 16 }} />
+                <label htmlFor="tab-panel-type" className="whitespace-nowrap text-xs font-semibold text-slate-600">패널 유형</label>
+                <select
+                  id="tab-panel-type"
+                  value={panelType}
+                  onChange={(e) => setLocalPanelType(e.target.value)}
+                  className="cursor-pointer rounded border border-slate-200 bg-white py-1 pl-2 pr-6 text-xs font-semibold text-slate-700"
+                >
+                  <option value="grid">grid</option>
+                  <option value="tab">tab</option>
+                </select>
+              </div>
+
               {/* 좌우 확장 토글 */}
               <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/90 px-3 py-2">
                 <IconExpand className="shrink-0 text-slate-500" />
@@ -825,13 +874,6 @@ export default function Base01WidgetPanel({ raw, deck, panelType = 'grid' }) {
                 onToggle={() => setWidgetLayoutOpenIndex((cur) => (cur === safeIdx ? null : safeIdx))}
                 onClose={closeWidgetLayoutPanel}
               />
-              <WidgetDataJsonPanel
-                label={activeLabel}
-                widget={activeW}
-                open={widgetDataOpenIndex === safeIdx}
-                onToggle={() => setWidgetDataOpenIndex((cur) => (cur === safeIdx ? null : safeIdx))}
-                onClose={closeWidgetDataPanel}
-              />
             </div>
             {/* 콘텐츠 본문 */}
             <div className="min-h-[500px] overflow-auto p-3">
@@ -879,7 +921,7 @@ export default function Base01WidgetPanel({ raw, deck, panelType = 'grid' }) {
   return (
     <div className={expanded ? 'px-2 pb-16 pt-6' : 'mx-auto max-w-[1400px] px-4 pb-16 pt-6 sm:px-6'}>
 
-      {/* 배치 속성 정보 레이어 — showLayoutInfo 시 화면 위에 오버레이 */}
+      {/* 배치 속성 정보 레이어 */}
       {showLayoutInfo && (
         <LayoutInfoLayer
           widgets={reversedWidgets}
@@ -887,14 +929,22 @@ export default function Base01WidgetPanel({ raw, deck, panelType = 'grid' }) {
           onClose={() => setShowLayoutInfo(false)}
         />
       )}
+      {/* Props JSON 레이어 */}
+      {showPropsInfo && (
+        <PropsInfoLayer
+          raw={raw}
+          deck={deck}
+          onClose={() => setShowPropsInfo(false)}
+        />
+      )}
 
       {/* ── 헤더 ── */}
       <header className="mb-4 border-b border-slate-200 pb-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
 
-          {/* 좌측: 배치 속성 아이콘 버튼 + 제목·설명 */}
-          <div className="flex min-w-0 items-center gap-3">
-            {/* 클릭 시 LayoutInfoLayer 토글 */}
+          {/* 좌측: 아이콘 버튼 2개 + 제목·설명 */}
+          <div className="flex min-w-0 items-center gap-2">
+            {/* 배치 속성 레이어 토글 */}
             <button
               type="button"
               title="위젯 배치 속성 정보 보기"
@@ -908,6 +958,21 @@ export default function Base01WidgetPanel({ raw, deck, panelType = 'grid' }) {
               ].join(' ')}
             >
               <IconLayoutWidgets className="text-white" />
+            </button>
+            {/* Props JSON 레이어 토글 */}
+            <button
+              type="button"
+              title="Props JSON 보기 (raw · deck)"
+              aria-label="Props 정보 레이어 열기"
+              onClick={() => setShowPropsInfo((v) => !v)}
+              className={[
+                'flex size-11 shrink-0 items-center justify-center rounded-xl shadow-md transition-colors',
+                showPropsInfo
+                  ? 'bg-gradient-to-br from-emerald-600 to-teal-700 ring-2 ring-emerald-400 ring-offset-1'
+                  : 'bg-gradient-to-br from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800',
+              ].join(' ')}
+            >
+              <IconCode className="text-white" />
             </button>
 
             <div className="min-w-0">
@@ -932,6 +997,24 @@ export default function Base01WidgetPanel({ raw, deck, panelType = 'grid' }) {
 
           {/* 우측: 반응형·편집 토글 + 다운로드 */}
           <div className="flex flex-wrap items-center gap-3 sm:justify-end">
+
+            {/* 패널 타입 선택 */}
+            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/90 px-3 py-2">
+              <IconLayoutWidgets className="shrink-0 text-slate-500" style={{ width: 16, height: 16 }} />
+              <label htmlFor="wpanel-type" className="text-xs font-semibold text-slate-600 whitespace-nowrap">패널 유형</label>
+              <select
+                id="wpanel-type"
+                value={panelType}
+                onChange={(e) => {
+                  // panelType prop 은 외부에서 전달받으므로 내부 override state 로 관리
+                  setLocalPanelType(e.target.value);
+                }}
+                className="cursor-pointer rounded border border-slate-200 bg-white py-1 pl-2 pr-6 text-xs font-semibold text-slate-700"
+              >
+                <option value="grid">grid</option>
+                <option value="tab">tab</option>
+              </select>
+            </div>
 
             {/* 반응형 토글 + 열 수 선택 */}
             <div
@@ -1105,13 +1188,6 @@ export default function Base01WidgetPanel({ raw, deck, panelType = 'grid' }) {
                       onToggle={() => setWidgetLayoutOpenIndex((cur) => (cur === i ? null : i))}
                       onClose={closeWidgetLayoutPanel}
                     />
-                    <WidgetDataJsonPanel
-                      label={label}
-                      widget={w}
-                      open={widgetDataOpenIndex === i}
-                      onToggle={() => setWidgetDataOpenIndex((cur) => (cur === i ? null : i))}
-                      onClose={closeWidgetDataPanel}
-                    />
                   </div>
                   {/* 카드 본문 */}
                   <div className="min-h-0 flex-1 overflow-auto bg-white p-2">
@@ -1164,13 +1240,6 @@ export default function Base01WidgetPanel({ raw, deck, panelType = 'grid' }) {
                     open={widgetLayoutOpenIndex === i}
                     onToggle={() => setWidgetLayoutOpenIndex((cur) => (cur === i ? null : i))}
                     onClose={closeWidgetLayoutPanel}
-                  />
-                  <WidgetDataJsonPanel
-                    label={label}
-                    widget={w}
-                    open={widgetDataOpenIndex === i}
-                    onToggle={() => setWidgetDataOpenIndex((cur) => (cur === i ? null : i))}
-                    onClose={closeWidgetDataPanel}
                   />
                 </div>
 
@@ -1281,6 +1350,16 @@ function IconSpinner() {
   );
 }
 
+/** 코드 브라켓 아이콘 — Props JSON 레이어 토글 */
+function IconCode({ className = '' }) {
+  return (
+    <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M8 6 3 12l5 6M16 6l5 6-5 6M14 4l-4 16"
+        stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 /** 좌우 확장 아이콘 — 좌우 확장 토글 */
 function IconExpand({ className = '' }) {
   return (
@@ -1304,13 +1383,6 @@ function IconPosition() {
 }
 
 /** 원형 블릿 아이콘 — widgetData JSON 팝오버 열기 버튼 */
-function IconBullet() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <circle cx="12" cy="12" r="4" />
-    </svg>
-  );
-}
 
 /** X 닫기 아이콘 — 각종 닫기 버튼 */
 function IconClose() {
