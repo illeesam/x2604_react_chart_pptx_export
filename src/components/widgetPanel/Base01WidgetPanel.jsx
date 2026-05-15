@@ -726,13 +726,15 @@ export default function Base01WidgetPanel({ raw, deck, panelType: panelTypeProp 
 
   /* ── 스타일 ── */
 
-  /** 캔버스 배경 격자 스타일 (CSS 선형 그라디언트 반복 패턴) */
+  /** 캔버스 배경 격자 스타일 — 위젯 편집 활성 시에만 격자선 표시 */
   const gridStyle = {
     backgroundColor: '#f8fafc',
-    backgroundImage: `
-      linear-gradient(to right,  rgba(148,163,184,0.14) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(148,163,184,0.14) 1px, transparent 1px)
-    `,
+    backgroundImage: widgetEditEnabled
+      ? `
+          linear-gradient(to right,  rgba(148,163,184,0.14) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(148,163,184,0.14) 1px, transparent 1px)
+        `
+      : 'none',
     backgroundSize: `${GRID_BG}px ${GRID_BG}px`,
   };
 
